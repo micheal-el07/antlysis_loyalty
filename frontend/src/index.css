@@ -1,0 +1,57 @@
+@import "tailwindcss";
+
+@theme {
+  /* Core palette */
+  --color-ink: #1c2b24;
+  --color-paper: #f3f4ee;
+  --color-paper-dim: #e9ebe2;
+  --color-petrol: #0e5c52;
+  --color-petrol-dark: #0a4038;
+  --color-petrol-tint: #dceae6;
+  --color-brass: #c99a3e;
+  --color-brass-dark: #9c7527;
+  --color-brass-tint: #f3e6c6;
+
+  /* Status */
+  --color-pending: #b8791a;
+  --color-pending-tint: #f6e9d3;
+  --color-approved: #2e7d4f;
+  --color-approved-tint: #dcefe2;
+  --color-rejected: #b23a2e;
+  --color-rejected-tint: #f6ddd9;
+
+  /* Line/border */
+  --color-line: #d8d9cd;
+  --color-line-strong: #b4b6a5;
+
+  --font-display: "Fraunces", ui-serif, Georgia, serif;
+  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", monospace;
+}
+
+html {
+  color-scheme: light;
+}
+
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Tabular numerals wherever monospace data appears */
+.font-mono {
+  font-variant-numeric: tabular-nums;
+}
+
+::selection {
+  background: var(--color-brass-tint);
+  color: var(--color-ink);
+}
+
+/* Ticket stub divider: a dashed "tear line" between a voucher's info panel
+   and its value stub — the perforation is what marks it as a ticket, not a card. */
+.ticket-stub {
+  border-left: 1.5px dashed var(--color-line-strong);
+}

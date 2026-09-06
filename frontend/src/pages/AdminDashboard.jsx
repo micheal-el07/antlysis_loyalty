@@ -1,0 +1,83 @@
+import { Link } from "react-router-dom";
+import { adminQueue, adminStats } from "../data/mock";
+import StatusBadge from "../components/StatusBadge";
+import Button from "../components/Button";
+import EmptyState from "../components/EmptyState";
+
+const STATS = [
+  { label: "Pending review", value: adminStats.pendingCount },
+  { label: "Approved today", value: adminStats.approvedToday },
+  { label: "Rejected today", value: adminStats.rejectedToday },
+  { label: "Avg. review time", value: `${adminStats.avgReviewMinutes}m` },
+];
+
+export default function AdminDashboard() {
+  return (
+    <div className="flex flex-col gap-8">
+      <div>
+        <h1 className="font-display text-2xl text-ink">Queue overview</h1>
+        <p className="mt-1 text-sm text-ink/55">Receipts waiting on a decision, newest first.</p>
+      </div>
+
+      <div className="grid grid-cols-4 divide-x divide-line border border-line bg-white">
+        {STATS.map((s) => (
+          <div key={s.label} className="px-5 py-4">
+            <p className="text-xs font-medium text-ink/50">{s.label}</p>
+            <p className="mt-1 font-mono text-2xl text-ink">{s.value}</p>
+          </div>
+        ))}
+      </div>
+
+      <div className="flex flex-col gap-3">
+        <div className="flex items-center justify-between">
+          <h2 className="text-sm font-medium text-ink/70">Next in queue</h2>
+          <Link to="/admin/review" className="text-sm font-medium text-petrol hover:text-petrol-dark">
+            Open review queue
+          </Link>
+        </div>
+
+        {adminQueue.length === 0 ? (
+          <EmptyState title="Queue is clear" description="No receipts are waiting on review right now." />
+        ) : (
+          <table className="w-full border-collapse text-left">
+            <thead>
+              <tr className="border-b border-line text-xs font-medium text-ink/50">
+                <th className="py-2 pr-4 font-medium">Receipt</th>
+                <th className="py-2 pr-4 font-medium">Member</th>
+                <th className="py-2 pr-4 font-medium">Merchant</th>
+                <th className="py-2 pr-4 font-medium">Submitted</th>
+                <th className="py-2 pr-4 text-right font-medium">Amount</th>
+                <th className="py-2 pr-4 font-medium">Status</th>
+                <th className="py-2 font-medium"></th>
+              </tr>
+            </thead>
+            <tbody>
+              {adminQueue.map((r) => (
+                <tr key={r.id} className="border-b border-line hover:bg-white">
+                  <td className="py-2.5 pr-4 font-mono text-xs text-ink/50">{r.id}</td>
+                  <td className="py-2.5 pr-4 text-sm text-ink">{r.user}</td>
+                  <td className="py-2.5 pr-4 text-sm text-ink/80">{r.merchant}</td>
+                  <td className="py-2.5 pr-4 font-mono text-xs text-ink/50">{r.date}</td>
+                  <td className="py-2.5 pr-4 text-right font-mono text-sm text-ink/70">
+                    ${r.amount.toFixed(2)}
+                  </td>
+                  <td className="py-2.5 pr-4">
+                    <StatusBadge status={r.status} />
+                  </td>
+                  <td className="py-2.5 text-right">
+                    <Link
+                      to="/admin/review"
+                      className="text-sm font-medium text-petrol hover:text-petrol-dark"
+                    >
+                      Review
+                    </Link>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+    </div>
+  );
+}
