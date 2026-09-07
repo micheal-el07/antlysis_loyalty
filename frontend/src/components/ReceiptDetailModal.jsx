@@ -35,10 +35,6 @@ export default function ReceiptDetailModal({ receipt, onClose }) {
 
         <dl className="flex flex-col gap-3 text-sm">
           <div className="flex items-center justify-between">
-            <dt className="text-ink/50">Receipt id</dt>
-            <dd className="font-mono text-ink">{receipt.id}</dd>
-          </div>
-          <div className="flex items-center justify-between">
             <dt className="text-ink/50">Order id</dt>
             <dd className="font-mono text-ink">{receipt.orderId}</dd>
           </div>
