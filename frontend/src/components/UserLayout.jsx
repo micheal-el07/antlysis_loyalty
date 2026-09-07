@@ -1,5 +1,5 @@
-import { NavLink, Outlet, Link } from "react-router-dom";
-import { currentUser } from "../data/mock";
+import { NavLink, Outlet, Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 const LINKS = [
   { to: "/", label: "Dashboard", end: true },
@@ -16,6 +16,14 @@ function navClass({ isActive }) {
 }
 
 export default function UserLayout() {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  function handleLogout() {
+    logout();
+    navigate("/login", { replace: true });
+  }
+
   return (
     <div className="min-h-screen bg-paper">
       <header className="border-b border-line bg-white">
@@ -33,8 +41,14 @@ export default function UserLayout() {
             </nav>
           </div>
           <div className="flex items-center gap-3 py-3">
+            <button
+              onClick={handleLogout}
+              className="text-sm font-medium text-ink/55 hover:text-ink"
+            >
+              Log out
+            </button>
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-petrol text-xs font-medium text-paper">
-              {currentUser.name
+              {user.name
                 .split(" ")
                 .map((part) => part[0])
                 .join("")}
@@ -46,12 +60,6 @@ export default function UserLayout() {
       <main className="mx-auto max-w-[1240px] px-6 py-10">
         <Outlet />
       </main>
-
-      <footer className="mx-auto max-w-[1240px] px-6 py-10 text-xs text-ink/40">
-        <Link to="/admin" className="hover:text-ink/70">
-          Switch to admin view
-        </Link>
-      </footer>
     </div>
   );
 }

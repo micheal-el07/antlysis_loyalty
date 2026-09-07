@@ -1,6 +1,8 @@
 import { Routes, Route } from "react-router-dom";
+import ProtectedRoute from "./components/ProtectedRoute";
 import UserLayout from "./components/UserLayout";
 import AdminLayout from "./components/AdminLayout";
+import Login from "./pages/Login";
 import UserDashboard from "./pages/UserDashboard";
 import ReceiptUpload from "./pages/ReceiptUpload";
 import ReceiptHistory from "./pages/ReceiptHistory";
@@ -12,16 +14,23 @@ import AdminReceiptReview from "./pages/AdminReceiptReview";
 export default function App() {
   return (
     <Routes>
-      <Route element={<UserLayout />}>
-        <Route path="/" element={<UserDashboard />} />
-        <Route path="/upload" element={<ReceiptUpload />} />
-        <Route path="/history" element={<ReceiptHistory />} />
-        <Route path="/vouchers" element={<VoucherList />} />
-        <Route path="/settings" element={<AccountSettings />} />
+      <Route path="/login" element={<Login />} />
+
+      <Route element={<ProtectedRoute />}>
+        <Route element={<UserLayout />}>
+          <Route path="/" element={<UserDashboard />} />
+          <Route path="/upload" element={<ReceiptUpload />} />
+          <Route path="/history" element={<ReceiptHistory />} />
+          <Route path="/vouchers" element={<VoucherList />} />
+          <Route path="/settings" element={<AccountSettings />} />
+        </Route>
       </Route>
-      <Route element={<AdminLayout />}>
-        <Route path="/admin" element={<AdminDashboard />} />
-        <Route path="/admin/review" element={<AdminReceiptReview />} />
+
+      <Route element={<ProtectedRoute role="admin" />}>
+        <Route element={<AdminLayout />}>
+          <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admin/review" element={<AdminReceiptReview />} />
+        </Route>
       </Route>
     </Routes>
   );
