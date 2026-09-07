@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useAuth } from "../context/AuthContext";
 
 const DUMMY_RECEIPTS = [
   {
@@ -60,6 +61,7 @@ const DUMMY_RECEIPTS = [
 ];
 
 export default function useReceipts() {
+  const { token } = useAuth();
   const [receipts, setReceipts] = useState(DUMMY_RECEIPTS);
   const [status, setStatus] = useState("loading");
 
@@ -68,7 +70,9 @@ export default function useReceipts() {
 
     async function loadReceipts() {
       try {
-        const res = await fetch("/api/receipts");
+        const res = await fetch("/api/receipts", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         const body = await res.json();
 
         if (!res.ok || !body.success) {
@@ -90,7 +94,7 @@ export default function useReceipts() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [token]);
 
   return { receipts, status };
 }

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useAuth } from "../context/AuthContext";
 
 const DUMMY_DASHBOARD = {
   user: { name: "Priya Nandakumar" },
@@ -33,6 +34,7 @@ const DUMMY_DASHBOARD = {
 };
 
 export default function useDashboard() {
+  const { token } = useAuth();
   const [data, setData] = useState(DUMMY_DASHBOARD);
   const [status, setStatus] = useState("loading");
 
@@ -41,7 +43,9 @@ export default function useDashboard() {
 
     async function loadDashboard() {
       try {
-        const res = await fetch("/api/dashboard");
+        const res = await fetch("/api/dashboard", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         const body = await res.json();
 
         if (!res.ok || !body.success) {
@@ -63,7 +67,7 @@ export default function useDashboard() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [token]);
 
   return { ...data, status };
 }
