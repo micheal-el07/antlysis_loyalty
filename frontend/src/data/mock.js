@@ -60,45 +60,6 @@ export const receipts = [
   },
 ];
 
-export const vouchers = [
-  {
-    id: "VC-2201",
-    title: "$10 off your next purchase",
-    description: "Valid at any participating location.",
-    value: "$10.00",
-    code: "RALLY-7QK2",
-    status: "active",
-    expiresAt: "2026-11-01",
-  },
-  {
-    id: "VC-2189",
-    title: "Free coffee, on us",
-    description: "Redeemable at Corner & Co. Coffee partner cafes.",
-    value: "Free item",
-    code: "RALLY-9MZP",
-    status: "active",
-    expiresAt: "2026-09-20",
-  },
-  {
-    id: "VC-2150",
-    title: "$5 off your next purchase",
-    description: "Valid at any participating location.",
-    value: "$5.00",
-    code: "RALLY-3FXT",
-    status: "redeemed",
-    expiresAt: "2026-08-10",
-  },
-  {
-    id: "VC-2098",
-    title: "$5 off your next purchase",
-    description: "Valid at any participating location.",
-    value: "$5.00",
-    code: "RALLY-1LWH",
-    status: "expired",
-    expiresAt: "2026-06-30",
-  },
-];
-
 export const adminQueue = [
   {
     id: "RC-1041",
