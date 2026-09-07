@@ -33,11 +33,6 @@ export default function UserLayout() {
             </nav>
           </div>
           <div className="flex items-center gap-3 py-3">
-            <div className="rounded-sm bg-brass-tint px-3 py-1.5 text-right">
-              <p className="font-mono text-sm font-medium leading-none text-brass-dark">
-                {currentUser.pointsBalance.toLocaleString()} pts
-              </p>
-            </div>
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-petrol text-xs font-medium text-paper">
               {currentUser.name
                 .split(" ")
