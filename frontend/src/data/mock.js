@@ -2,8 +2,8 @@
 // component props and shapes are deliberately kept simple so that swap is mechanical.
 
 export const currentUser = {
-  name: "Priya Nandakumar",
-  email: "priya.n@example.com",
+  name: "John Doe",
+  email: "jdoe@test.com",
   memberSince: "March 2024",
   tier: "Gold",
   pointsBalance: 2140,
