@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import useReceipts from "../hooks/useReceipts";
 import Button from "../components/Button";
 import EmptyState from "../components/EmptyState";
-import ReceiptsList from "../components/ReceiptsList";
+import ReceiptHistoryTable from "../components/ReceiptHistoryTable";
 
 const FILTERS = ["All", "Pending", "Approved", "Rejected"];
 
@@ -55,7 +55,7 @@ export default function ReceiptHistory() {
         ))}
       </div>
 
-      <ReceiptsList receipts={filtered} loadStatus={loadStatus} showPurchaseDate emptyState={emptyState} />
+      <ReceiptHistoryTable receipts={filtered} loadStatus={loadStatus} emptyState={emptyState} />
     </div>
   );
 }
