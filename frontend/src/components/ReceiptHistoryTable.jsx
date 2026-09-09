@@ -36,7 +36,7 @@ export default function ReceiptHistoryTable({ receipts, loadStatus, error, onRet
           <span>Order id</span>
           <span>Purchase date</span>
           <span>Submitted</span>
-          <span className="text-right">Amount</span>
+          <span className="text-right">Amount (RM)</span>
           <span>Status</span>
           <span />
         </div>
@@ -46,7 +46,7 @@ export default function ReceiptHistoryTable({ receipts, loadStatus, error, onRet
             <p className="truncate font-mono text-xs text-ink/50">{r.orderId}</p>
             <p className="font-mono text-sm text-ink/70">{formatDate(r.purchaseDate)}</p>
             <p className="font-mono text-sm text-ink/70">{formatDate(r.submissionDate)}</p>
-            <p className="text-right font-mono text-sm text-ink/70">${Number(r.purchaseAmount).toFixed(2)}</p>
+            <p className="text-right font-mono text-sm text-ink/70">{Number(r.purchaseAmount).toFixed(2)}</p>
             <div>
               <StatusBadge status={r.status} />
             </div>

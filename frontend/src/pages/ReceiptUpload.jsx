@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import Button from "../components/Button";
 import FormField, { inputClass } from "../components/FormField";
+import { friendlyErrorMessage } from "../utils/friendlyError";
 
 const STEPS = [
   { n: 1, label: "Add photo" },
@@ -46,7 +47,7 @@ export default function ReceiptUpload() {
     if (!form.amount) {
       nextErrors.amount = "Enter the total amount from the receipt.";
     } else if (Number.isNaN(amountNum) || amountNum <= 0) {
-      nextErrors.amount = "Amount must be a number greater than $0.00.";
+      nextErrors.amount = "Amount must be a number greater than RM0.00.";
     }
     if (Object.keys(nextErrors).length > 0) {
       setErrors(nextErrors);
@@ -84,7 +85,7 @@ export default function ReceiptUpload() {
 
       setStep(3);
     } catch (err) {
-      setErrors({ form: err.message });
+      setErrors({ form: friendlyErrorMessage(err, "Couldn't submit your receipt. Please try again.") });
     } finally {
       setSubmitting(false);
     }
@@ -95,7 +96,7 @@ export default function ReceiptUpload() {
       <div>
         <h1 className="font-display text-3xl text-ink">Upload a receipt</h1>
         <p className="mt-1 text-sm text-ink/60">
-          Submit a purchase receipt to earn points toward your next voucher.
+          Submit a purchase receipt to start earning voucher.
         </p>
       </div>
 
@@ -239,8 +240,7 @@ export default function ReceiptUpload() {
           <div>
             <p className="font-display text-xl text-ink">Receipt submitted</p>
             <p className="mt-1 text-sm text-ink/60">
-              We'll review {form.orderId || "your receipt"} within 24 hours and add points to your
-              balance once it's approved.
+              We'll review {form.orderId || "your receipt"} receipt and issue a voucher once validated.
             </p>
           </div>
           <div className="flex gap-3">

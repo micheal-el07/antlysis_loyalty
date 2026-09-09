@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import Button from "../components/Button";
 import FormField, { inputClass } from "../components/FormField";
 import PasswordInput from "../components/PasswordInput";
+import { friendlyErrorMessage } from "../utils/friendlyError";
 
 export default function Login() {
   const { login } = useAuth();
@@ -43,7 +44,7 @@ export default function Login() {
       const user = await login(identifier.trim(), password);
       navigate(resolveDestination(user.role), { replace: true });
     } catch (err) {
-      setErrors({ form: err.message });
+      setErrors({ form: friendlyErrorMessage(err, "Couldn't sign in. Please try again.") });
     } finally {
       setSubmitting(false);
     }
@@ -52,7 +53,7 @@ export default function Login() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-paper px-6">
       <div className="w-full max-w-sm">
-        <p className="font-display text-2xl font-semibold tracking-tight text-ink">Rally</p>
+        <p className="font-display text-2xl font-semibold tracking-tight text-ink">Antlity</p>
         <h1 className="mt-6 font-display text-3xl text-ink">Sign in</h1>
         <p className="mt-1 text-sm text-ink/60">Enter your details to access your account.</p>
 

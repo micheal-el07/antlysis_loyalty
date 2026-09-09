@@ -1,9 +1,17 @@
+import { useState } from "react";
 import useVouchers from "../hooks/useVouchers";
 import EmptyState from "../components/EmptyState";
 import AdminVouchersTable from "../components/AdminVouchersTable";
+import Pagination from "../components/Pagination";
+
+const PAGE_SIZE = 10;
 
 export default function AdminVouchers() {
-  const { vouchers, status: loadStatus, error, reload } = useVouchers();
+  const [page, setPage] = useState(1);
+  const { vouchers, pagination, status: loadStatus, error, reload } = useVouchers({
+    page,
+    limit: PAGE_SIZE,
+  });
 
   return (
     <div className="flex flex-col gap-6">
@@ -23,6 +31,12 @@ export default function AdminVouchers() {
             description="Vouchers appear here as soon as a receipt is approved."
           />
         }
+      />
+
+      <Pagination
+        page={pagination?.page ?? page}
+        totalPages={pagination?.totalPages}
+        onPageChange={setPage}
       />
     </div>
   );

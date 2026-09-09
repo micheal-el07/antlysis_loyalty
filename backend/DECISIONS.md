@@ -1,4 +1,4 @@
-# Rally — Backend: Decisions, Security & Testing
+# Antlity — Backend: Decisions, Security & Testing
 
 Companion to [README.md](README.md). Dense by design — full reasoning behind any item here is available on request/in interview.
 
@@ -24,6 +24,8 @@ Companion to [README.md](README.md). Dense by design — full reasoning behind a
 | Sequelize SQL logging gated by `NODE_ENV` | On in dev, off in test/prod, consistent across all three blocks |
 | "Available vouchers" = not-yet-expired | No redeemed/used flag in schema; expiry is the only signal |
 | No `created_at` on receipts / `updated_at` on vouchers | Deliberate, matches schema as specified |
+| Pagination is opt-in, not always-on | Omitting `page`/`limit` returns everything — needed by call sites wanting an accurate unpaginated total (dashboard stats, nav badge, review queue), not just the list pages |
+| `GET /vouchers` now returns `{ vouchers, pagination }`, not a bare array | Needed to carry pagination metadata; a real (if minor) breaking response-shape change from before pagination existed |
 
 ## Business rules → enforcement
 
@@ -90,8 +92,8 @@ Documented as evidence of the verification process, not despite it.
 
 ## Known limitations
 
-- No pagination (optional per spec; deferred)
-- No Redis-backed JWT invalidation (stateless logout, documented tradeoff)
+- Pagination: implemented on the three list endpoints that needed it (`GET /receipts`, `GET /admin/receipts`, `GET /vouchers`), offset/limit-based, opt-in (omitting `page`/`limit` returns everything — used by the admin dashboard's counts, the nav badge, and the review queue, which don't want a partial view). The admin review queue itself is deliberately left unpaginated — it's a one-at-a-time action queue, not a browse list.
+- **No Redis-backed JWT invalidation.** Stateless logout is a deliberate choice; a "logged out" token remains valid until natural expiry. Planned approach if implemented: on logout, store the token's identifier in Redis with a TTL matching its remaining `exp`, checked in `authMiddleware` alongside signature verification — scoped out given the assessment timeline, not attempted due to lack of understanding.
 - Voucher rate (5%) and expiry (90 days) are assumptions, centralized as named constants
 - No rate limiting beyond auth endpoints
 - Phone normalization assumes Malaysian format for un-prefixed numbers

@@ -37,7 +37,7 @@ export default function AdminReceiptsTable({ receipts, loadStatus, error, onRetr
           <span>Order id</span>
           <span>Member</span>
           <span>Purchase date</span>
-          <span className="text-right">Amount</span>
+          <span className="text-right">Amount (RM)</span>
           <span>Status</span>
           <span />
         </div>
@@ -48,7 +48,7 @@ export default function AdminReceiptsTable({ receipts, loadStatus, error, onRetr
             <p className="truncate text-sm text-ink">{r.uploader?.name ?? "Unknown member"}</p>
             <p className="font-mono text-sm text-ink/70">{formatDate(r.purchaseDate)}</p>
             <p className="text-right font-mono text-sm text-ink/70">
-              ${Number(r.purchaseAmount).toFixed(2)}
+              {Number(r.purchaseAmount).toFixed(2)}
             </p>
             <div>
               <StatusBadge status={r.status} />

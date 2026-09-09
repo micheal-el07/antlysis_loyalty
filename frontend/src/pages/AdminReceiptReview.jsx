@@ -4,6 +4,7 @@ import Button from "../components/Button";
 import EmptyState from "../components/EmptyState";
 import LoadingState from "../components/LoadingState";
 import ErrorState from "../components/ErrorState";
+import { friendlyErrorMessage } from "../utils/friendlyError";
 
 const REJECT_REASONS = [
   "Image too blurry to read",
@@ -57,7 +58,7 @@ export default function AdminReceiptReview() {
       setDecisions((d) => [{ ...selected, status: "approved" }, ...d]);
       setSelectedId(null);
     } catch (err) {
-      setError(err.message);
+      setError(friendlyErrorMessage(err, "Couldn't save that decision. Please try again."));
     } finally {
       setSubmitting(false);
     }
@@ -77,7 +78,7 @@ export default function AdminReceiptReview() {
       setReason("");
       setSelectedId(null);
     } catch (err) {
-      setError(err.message);
+      setError(friendlyErrorMessage(err, "Couldn't save that decision. Please try again."));
     } finally {
       setSubmitting(false);
     }
@@ -116,7 +117,7 @@ export default function AdminReceiptReview() {
                     <p className="truncate text-xs text-ink/50">{r.orderId}</p>
                   </div>
                   <p className="shrink-0 font-mono text-sm text-ink/70">
-                    ${Number(r.purchaseAmount).toFixed(2)}
+                    RM{Number(r.purchaseAmount).toFixed(2)}
                   </p>
                 </button>
               </li>
@@ -183,7 +184,7 @@ export default function AdminReceiptReview() {
                 <Field label="Member" value={selected.uploader?.name ?? "—"} />
                 <Field label="Order ID" value={selected.orderId} mono />
                 <Field label="Purchase date" value={formatDate(selected.purchaseDate)} mono />
-                <Field label="Amount" value={`$${Number(selected.purchaseAmount).toFixed(2)}`} mono />
+                <Field label="Amount (RM)" value={Number(selected.purchaseAmount).toFixed(2)} mono />
                 <Field label="Submitted" value={formatDate(selected.submissionDate)} mono />
               </div>
 

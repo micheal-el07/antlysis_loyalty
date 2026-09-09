@@ -1,9 +1,14 @@
 import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
+import { friendlyErrorMessage } from "../utils/friendlyError";
 
-export default function useReceipts() {
+// Omitting page/statusFilter entirely (call with no args) fetches every
+// receipt, unpaginated — used where an accurate total matters more than a
+// single page (e.g. a count).
+export default function useReceipts({ statusFilter, page, limit, search, dateFrom, dateTo } = {}) {
   const { token, logout } = useAuth();
   const [receipts, setReceipts] = useState([]);
+  const [pagination, setPagination] = useState(null);
   const [status, setStatus] = useState("loading");
   const [error, setError] = useState(null);
 
@@ -11,7 +16,16 @@ export default function useReceipts() {
     setStatus("loading");
     setError(null);
     try {
-      const res = await fetch("/api/v1/receipts", {
+      const params = new URLSearchParams();
+      if (page !== undefined) params.set("page", String(page));
+      if (limit !== undefined) params.set("limit", String(limit));
+      if (statusFilter && statusFilter !== "all") params.set("status", statusFilter);
+      if (search) params.set("search", search);
+      if (dateFrom) params.set("dateFrom", dateFrom);
+      if (dateTo) params.set("dateTo", dateTo);
+      const qs = params.toString();
+
+      const res = await fetch(`/api/v1/receipts${qs ? `?${qs}` : ""}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -31,16 +45,17 @@ export default function useReceipts() {
       }
 
       setReceipts(body.data.receipts);
+      setPagination(body.data.pagination);
       setStatus("ready");
     } catch (err) {
-      setError(err.message || "Couldn't load your receipts.");
+      setError(friendlyErrorMessage(err, "Couldn't load your receipts."));
       setStatus("error");
     }
-  }, [token, logout]);
+  }, [token, logout, statusFilter, page, limit, search, dateFrom, dateTo]);
 
   useEffect(() => {
     load();
   }, [load]);
 
-  return { receipts, status, error, reload: load };
+  return { receipts, pagination, status, error, reload: load };
 }

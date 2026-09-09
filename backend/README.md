@@ -1,6 +1,6 @@
-# Rally — Backend
+# Antlity — Backend
 
-Express/PostgreSQL API for the Rally loyalty program: users upload purchase receipts, admins approve or reject them, and an approved receipt automatically generates a voucher for the uploader. Layered architecture — routes hold no logic, controllers only translate requests/responses, business rules live in services, Sequelize models are schema-only. No route or controller ever queries a model directly.
+Express/PostgreSQL API for the Antlity loyalty program: users upload purchase receipts, admins approve or reject them, and an approved receipt automatically generates a voucher for the uploader. Layered architecture — routes hold no logic, controllers only translate requests/responses, business rules live in services, Sequelize models are schema-only. No route or controller ever queries a model directly.
 
 ## Stack
 
@@ -113,13 +113,13 @@ Base URL: `http://localhost:4000` (or your configured `PORT`).
 | POST | `/api/v1/auth/logout` | ✓ | stateless JWT — no server-side effect, just a symmetric endpoint |
 | GET | `/api/v1/users/me` | ✓ | |
 | PUT | `/api/v1/users/me` | ✓ | any of `{ name, email, phoneNumber }` |
-| GET | `/api/v1/receipts` | ✓ | own receipts only |
+| GET | `/api/v1/receipts` | ✓ | own receipts only · optional `?page=&limit=&status=&search=&dateFrom=&dateTo=` (see Pagination, filtering & search below) |
 | GET | `/api/v1/receipts/:id` | ✓ | 404 if it's not yours |
 | POST | `/api/v1/receipts` | ✓ | `multipart/form-data`: file field `image`, plus `orderId`, `purchaseDate` (ISO datetime), `purchaseAmount`. Status is always forced to `pending` server-side |
-| GET | `/api/v1/admin/receipts` | ✓ + admin | all receipts, every user, includes `uploader: { id, name }` |
+| GET | `/api/v1/admin/receipts` | ✓ + admin | all receipts, every user, includes `uploader: { id, name }` · optional `?page=&limit=&status=&search=&dateFrom=&dateTo=` |
 | GET | `/api/v1/admin/receipts/:id` | ✓ + admin | |
 | PATCH | `/api/v1/admin/receipts/:id` | ✓ + admin | `{ status: "approved" }` or `{ status: "rejected", rejectedReason }` |
-| GET | `/api/v1/vouchers` | ✓ | admin: all (includes `owner`/`order_id`); user: own only |
+| GET | `/api/v1/vouchers` | ✓ | admin: all (includes `owner`/`order_id`); user: own only · optional `?page=&limit=` |
 | GET | `/api/v1/vouchers/:id` | ✓ | 404 if not yours (unless admin) |
 | GET | `/api/dashboard` | ✓ | **unversioned, no `/auth` prefix** — aggregate summary (see below) |
 | GET | `/uploads/receipts/:filename` | — | static file serving for uploaded receipt images |
@@ -135,5 +135,20 @@ Base URL: `http://localhost:4000` (or your configured `PORT`).
   }
 }
 ```
+
+### Pagination, filtering & search
+
+`page`/`limit` are optional and opt-in — omit both entirely and the endpoint returns everything (no `limit`/`offset` applied), which is what the admin dashboard's stat counts, the nav's pending-count badge, and the review queue all rely on for an accurate total. Passing either one turns pagination on, defaulting the other (`page=1`, `limit=10`); `limit` is capped at 50. When pagination is active, the response includes a `pagination` object alongside the data:
+```json
+{ "page": 1, "limit": 10, "total": 42, "totalPages": 5 }
+```
+When it's not active, `pagination` is `null`.
+
+`GET /api/v1/receipts` and `GET /api/v1/admin/receipts` additionally accept:
+- **`status`** (`pending`/`approved`/`rejected`) — exact match, filtered server-side.
+- **`search`** — free-text, case-insensitive partial match (Postgres `ILIKE`). Matches `orderId` only for a user's own receipts; for admin, matches `orderId` **or** the uploader's name, since only the admin query joins the uploader.
+- **`dateFrom`** / **`dateTo`** — `YYYY-MM-DD`, filters on `purchaseDate` inclusive of the full day at each end (`00:00:00.000` through `23:59:59.999`). Providing `dateFrom` after `dateTo` is rejected with a 400.
+
+All of these compose in one query rather than needing separate requests — e.g. `?status=approved&search=jane&dateFrom=2026-01-01&dateTo=2026-01-31&page=2&limit=10` — which matters because filtering an already-paginated page of results client-side would produce wrong counts.
 
 For design decisions, security reasoning, bug history, and testing notes, see [DECISIONS.md](DECISIONS.md).

@@ -3,8 +3,8 @@ const { sendSuccess } = require('../utils/response');
 const voucherService = require('../services/voucher.service');
 
 exports.list = asyncHandler(async (req, res) => {
-  const vouchers = await voucherService.listForRequester(req.user);
-  sendSuccess(res, vouchers);
+  const result = await voucherService.listForRequester(req.user, req.query);
+  sendSuccess(res, result);
 });
 
 exports.getById = asyncHandler(async (req, res) => {

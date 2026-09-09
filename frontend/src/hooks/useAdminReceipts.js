@@ -1,9 +1,16 @@
 import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
+import { friendlyErrorMessage } from "../utils/friendlyError";
 
-export default function useAdminReceipts() {
+// Omitting page/statusFilter entirely (call with no args) fetches every
+// receipt, unpaginated — this is what the review queue, the admin
+// dashboard's stats, and the nav's pending-count badge all rely on for an
+// accurate total. Passing them turns pagination/filtering on, for the
+// admin receipts list page.
+export default function useAdminReceipts({ statusFilter, page, limit, search, dateFrom, dateTo } = {}) {
   const { token, logout } = useAuth();
   const [receipts, setReceipts] = useState([]);
+  const [pagination, setPagination] = useState(null);
   const [status, setStatus] = useState("loading");
   const [error, setError] = useState(null);
 
@@ -11,7 +18,16 @@ export default function useAdminReceipts() {
     setStatus("loading");
     setError(null);
     try {
-      const res = await fetch("/api/v1/admin/receipts", {
+      const params = new URLSearchParams();
+      if (page !== undefined) params.set("page", String(page));
+      if (limit !== undefined) params.set("limit", String(limit));
+      if (statusFilter && statusFilter !== "all") params.set("status", statusFilter);
+      if (search) params.set("search", search);
+      if (dateFrom) params.set("dateFrom", dateFrom);
+      if (dateTo) params.set("dateTo", dateTo);
+      const qs = params.toString();
+
+      const res = await fetch(`/api/v1/admin/receipts${qs ? `?${qs}` : ""}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -31,12 +47,13 @@ export default function useAdminReceipts() {
       }
 
       setReceipts(body.data.receipts);
+      setPagination(body.data.pagination);
       setStatus("ready");
     } catch (err) {
-      setError(err.message || "Couldn't load receipts.");
+      setError(friendlyErrorMessage(err, "Couldn't load receipts."));
       setStatus("error");
     }
-  }, [token, logout]);
+  }, [token, logout, statusFilter, page, limit, search, dateFrom, dateTo]);
 
   useEffect(() => {
     load();
@@ -68,5 +85,5 @@ export default function useAdminReceipts() {
     return body.data;
   }
 
-  return { receipts, status, error, reload: load, updateReceiptStatus };
+  return { receipts, pagination, status, error, reload: load, updateReceiptStatus };
 }

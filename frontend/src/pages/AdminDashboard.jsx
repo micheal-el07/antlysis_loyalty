@@ -69,7 +69,7 @@ export default function AdminDashboard() {
                 <th className="py-2 pr-4 font-medium">Receipt</th>
                 <th className="py-2 pr-4 font-medium">Member</th>
                 <th className="py-2 pr-4 font-medium">Submitted</th>
-                <th className="py-2 pr-4 text-right font-medium">Amount</th>
+                <th className="py-2 pr-4 text-right font-medium">Amount (RM)</th>
                 <th className="py-2 pr-4 font-medium">Status</th>
                 <th className="py-2 font-medium"></th>
               </tr>
@@ -83,7 +83,7 @@ export default function AdminDashboard() {
                     {formatDate(r.submissionDate)}
                   </td>
                   <td className="py-2.5 pr-4 text-right font-mono text-sm text-ink/70">
-                    ${Number(r.purchaseAmount).toFixed(2)}
+                    {Number(r.purchaseAmount).toFixed(2)}
                   </td>
                   <td className="py-2.5 pr-4">
                     <StatusBadge status={r.status} />

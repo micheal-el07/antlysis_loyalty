@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
+import { friendlyErrorMessage } from "../utils/friendlyError";
 
 export default function useDashboard() {
   const { token, logout } = useAuth();
@@ -33,7 +34,7 @@ export default function useDashboard() {
       setData(body.data);
       setStatus("ready");
     } catch (err) {
-      setError(err.message || "Couldn't load your dashboard.");
+      setError(friendlyErrorMessage(err, "Couldn't load your dashboard."));
       setStatus("error");
     }
   }, [token, logout]);

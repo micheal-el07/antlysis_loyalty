@@ -1,18 +1,8 @@
-const { Op } = require('sequelize');
 const { User, Receipt, Voucher } = require('../models');
 const { toDashboardReceipt } = require('../utils/serializers');
 const { NotFoundError } = require('../utils/errors');
 const { RECENT_RECEIPTS_LIMIT } = require('../config/constants');
-
-// "Available" vouchers = not yet expired. The schema has no redeemed/used
-// flag, so expiry is the only signal we have for whether a voucher can
-// still be used — revisit if a redemption concept gets added later.
-function availableVoucherWhere(uploaderId) {
-  return {
-    uploaderId,
-    [Op.or]: [{ expiryDate: null }, { expiryDate: { [Op.gt]: new Date() } }],
-  };
-}
+const { availableVoucherWhere } = require('../utils/voucherAvailability');
 
 async function getDashboard(userId) {
   const user = await User.findByPk(userId);
