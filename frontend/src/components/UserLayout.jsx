@@ -30,7 +30,7 @@ export default function UserLayout() {
         <div className="mx-auto flex max-w-[1240px] items-center justify-between px-6">
           <div className="flex items-center gap-10">
             <Link to="/" className="font-display text-xl font-semibold tracking-tight text-ink">
-              Rally
+              Antlity
             </Link>
             <nav className="flex items-center gap-7">
               {LINKS.map((link) => (

@@ -5,33 +5,10 @@ import FormField, { inputClass } from "../components/FormField";
 import LoadingState from "../components/LoadingState";
 import { friendlyErrorMessage } from "../utils/friendlyError";
 
-const NOTIFICATION_OPTIONS = [
-  {
-    key: "receiptDecisions",
-    label: "Receipt decisions",
-    hint: "Get notified when a receipt is approved or rejected.",
-  },
-  {
-    key: "voucherExpiry",
-    label: "Voucher expiry reminders",
-    hint: "A heads-up a few days before an unused voucher expires.",
-  },
-  {
-    key: "promotions",
-    label: "Promotions and bonus point events",
-    hint: "Occasional emails about ways to earn extra points.",
-  },
-];
-
 export default function AccountSettings() {
   const { token, user, logout } = useAuth();
   const [form, setForm] = useState({ name: user?.name || "", email: "", phoneNumber: "" });
   const [loadStatus, setLoadStatus] = useState("loading");
-  const [notifications, setNotifications] = useState({
-    receiptDecisions: true,
-    voucherExpiry: true,
-    promotions: false,
-  });
   const [saveStatus, setSaveStatus] = useState("idle");
   const [errors, setErrors] = useState({});
 
@@ -127,7 +104,7 @@ export default function AccountSettings() {
     <div className="mx-auto flex max-w-2xl flex-col gap-10">
       <div>
         <h1 className="font-display text-3xl text-ink">Account settings</h1>
-        <p className="mt-1 text-sm text-ink/60">Manage your profile and notification preferences.</p>
+        <p className="mt-1 text-sm text-ink/60">Manage your profile.</p>
       </div>
 
       <form onSubmit={handleSave} className="flex flex-col gap-10">
@@ -144,7 +121,6 @@ export default function AccountSettings() {
           <FormField
             label="Email address"
             htmlFor="email"
-            hint="Used for receipt decisions and voucher alerts."
           >
             <input
               id="email"
@@ -164,26 +140,6 @@ export default function AccountSettings() {
           </FormField>
         </section>
 
-        <section className="flex flex-col gap-4 border-t border-line pt-8">
-          <h2 className="font-display text-lg text-ink">Notifications</h2>
-          {NOTIFICATION_OPTIONS.map((item) => (
-            <label key={item.key} className="flex items-start gap-3 py-1">
-              <input
-                type="checkbox"
-                checked={notifications[item.key]}
-                onChange={(e) =>
-                  setNotifications({ ...notifications, [item.key]: e.target.checked })
-                }
-                className="mt-0.5 h-4 w-4 accent-petrol"
-              />
-              <span>
-                <span className="block text-sm font-medium text-ink">{item.label}</span>
-                <span className="block text-xs text-ink/50">{item.hint}</span>
-              </span>
-            </label>
-          ))}
-        </section>
-
         {errors.form && <p className="text-sm text-rejected">{errors.form}</p>}
 
         <div className="flex items-center gap-3 border-t border-line pt-8">
@@ -193,17 +149,6 @@ export default function AccountSettings() {
           {saveStatus === "saved" && <span className="text-sm text-approved">Changes saved.</span>}
         </div>
       </form>
-
-      <section className="flex flex-col gap-3 border border-rejected/30 bg-rejected-tint/40 px-6 py-5">
-        <h2 className="font-display text-lg text-ink">Delete account</h2>
-        <p className="text-sm text-ink/60">
-          Permanently deletes your profile, receipt history, and any unredeemed vouchers. This
-          can't be undone.
-        </p>
-        <Button variant="reject" className="self-start">
-          Delete my account
-        </Button>
-      </section>
     </div>
   );
 }

@@ -1,4 +1,4 @@
-# Rally — Frontend
+# Antlity — Frontend
 
 A loyalty-rewards web app: users upload purchase receipts, admins review and approve/reject them, and approved receipts automatically generate vouchers. This is the React frontend; it talks to the Express/PostgreSQL backend in `../backend`.
 

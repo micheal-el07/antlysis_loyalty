@@ -1,6 +1,6 @@
-# Rally — Backend
+# Antlity — Backend
 
-Express/PostgreSQL API for the Rally loyalty program: users upload purchase receipts, admins approve or reject them, and an approved receipt automatically generates a voucher for the uploader. Layered architecture — routes hold no logic, controllers only translate requests/responses, business rules live in services, Sequelize models are schema-only. No route or controller ever queries a model directly.
+Express/PostgreSQL API for the Antlity loyalty program: users upload purchase receipts, admins approve or reject them, and an approved receipt automatically generates a voucher for the uploader. Layered architecture — routes hold no logic, controllers only translate requests/responses, business rules live in services, Sequelize models are schema-only. No route or controller ever queries a model directly.
 
 ## Stack
 

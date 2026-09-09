@@ -30,8 +30,8 @@ export default function VoucherList() {
       {availableAmount !== null && (
         <div className="border border-line bg-white">
           <StatCard
-            label="Total value, unexpired vouchers"
-            value={`$${availableAmount.toFixed(2)}`}
+            label="Total value, unexpired vouchers (RM)"
+            value={availableAmount.toFixed(2)}
           />
         </div>
       )}

@@ -1,4 +1,4 @@
-# Rally — Backend: Decisions, Security & Testing
+# Antlity — Backend: Decisions, Security & Testing
 
 Companion to [README.md](README.md). Dense by design — full reasoning behind any item here is available on request/in interview.
 

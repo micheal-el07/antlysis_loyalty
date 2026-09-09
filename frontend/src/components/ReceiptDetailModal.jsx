@@ -45,8 +45,8 @@ export default function ReceiptDetailModal({ receipt, onClose }) {
             <dd className="font-mono text-ink">{receipt.orderId}</dd>
           </div>
           <div className="flex items-center justify-between">
-            <dt className="text-ink/50">Amount</dt>
-            <dd className="font-mono text-ink">${Number(receipt.purchaseAmount).toFixed(2)}</dd>
+            <dt className="text-ink/50">Amount (RM)</dt>
+            <dd className="font-mono text-ink">{Number(receipt.purchaseAmount).toFixed(2)}</dd>
           </div>
           {receipt.purchaseDate && (
             <div className="flex items-center justify-between">

@@ -71,7 +71,7 @@ export default function ReceiptHistory() {
     <div className="flex flex-col gap-6">
       <div>
         <h1 className="font-display text-3xl text-ink">Receipt history</h1>
-        <p className="mt-1 text-sm text-ink/60">Every receipt you've submitted and its outcome.</p>
+        <p className="mt-1 text-sm text-ink/60">List of every receipts you've submitted.</p>
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-line pb-4">

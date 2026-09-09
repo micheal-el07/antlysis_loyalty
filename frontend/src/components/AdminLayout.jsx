@@ -33,7 +33,7 @@ export default function AdminLayout() {
         <div className="mx-auto flex max-w-[1240px] items-center justify-between px-6 py-3">
           <div className="flex items-center gap-6">
             <Link to="/admin" className="font-display text-lg font-semibold text-paper">
-              Rally <span className="font-sans text-sm font-normal text-paper/50">admin</span>
+              Antlity <span className="font-sans text-sm font-normal text-paper/50">admin</span>
             </Link>
             <nav className="flex items-center gap-1">
               {LINKS.map((link) => (
