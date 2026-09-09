@@ -33,6 +33,12 @@ const REGISTER_RATE_LIMIT_MAX_ATTEMPTS = 20;
 // (leading +).
 const DEFAULT_PHONE_COUNTRY = 'MY';
 
+// List endpoints (receipts, admin receipts, vouchers): applied only when
+// the caller actually asks to paginate (see utils/pagination.js) — the cap
+// stops a client requesting an unreasonably large page in one request.
+const DEFAULT_PAGE_SIZE = 10;
+const MAX_PAGE_SIZE = 50;
+
 module.exports = {
   VOUCHER_REWARD_RATE,
   VOUCHER_VALIDITY_DAYS,
@@ -44,4 +50,6 @@ module.exports = {
   REGISTER_RATE_LIMIT_WINDOW_MS,
   REGISTER_RATE_LIMIT_MAX_ATTEMPTS,
   DEFAULT_PHONE_COUNTRY,
+  DEFAULT_PAGE_SIZE,
+  MAX_PAGE_SIZE,
 };

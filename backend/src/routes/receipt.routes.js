@@ -3,10 +3,10 @@ const receiptController = require('../controllers/receipt.controller');
 const authMiddleware = require('../middleware/auth');
 const { validate } = require('../middleware/validate');
 const upload = require('../config/multer');
-const { createReceiptSchema } = require('../validators/receiptValidator');
+const { createReceiptSchema, receiptListQuerySchema } = require('../validators/receiptValidator');
 const { idParamSchema } = require('../validators/commonValidator');
 
-router.get('/', authMiddleware, receiptController.list);
+router.get('/', authMiddleware, validate(receiptListQuerySchema, 'query'), receiptController.list);
 
 router.get('/:id', authMiddleware, validate(idParamSchema, 'params'), receiptController.getById);
 

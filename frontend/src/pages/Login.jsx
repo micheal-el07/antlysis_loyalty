@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import Button from "../components/Button";
 import FormField, { inputClass } from "../components/FormField";
 import PasswordInput from "../components/PasswordInput";
+import { friendlyErrorMessage } from "../utils/friendlyError";
 
 export default function Login() {
   const { login } = useAuth();
@@ -43,7 +44,7 @@ export default function Login() {
       const user = await login(identifier.trim(), password);
       navigate(resolveDestination(user.role), { replace: true });
     } catch (err) {
-      setErrors({ form: err.message });
+      setErrors({ form: friendlyErrorMessage(err, "Couldn't sign in. Please try again.") });
     } finally {
       setSubmitting(false);
     }

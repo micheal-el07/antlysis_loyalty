@@ -28,14 +28,14 @@ export default function VoucherTable({ vouchers, loadStatus, error, onRetry, emp
     <div className="overflow-x-auto">
       <div className="min-w-120">
         <div className={`${ROW_GRID} border-b border-line pb-2 text-xs font-medium text-ink/50`}>
-          <span>Receipt id</span>
+          <span>Order id</span>
           <span className="text-right">Amount</span>
           <span>Expires at</span>
         </div>
 
         {vouchers.map((v) => (
           <div key={v.id} className={`${ROW_GRID} border-b border-line py-3`}>
-            <p className="truncate font-mono text-xs text-ink/50">{v.receipt_id}</p>
+            <p className="truncate font-mono text-xs text-ink/50">{v.order_id ?? "—"}</p>
             <p className="text-right font-mono text-sm text-ink/70">${Number(v.amount).toFixed(2)}</p>
             <p className="font-mono text-sm text-ink/70">{formatDate(v.expiry_date)}</p>
           </div>

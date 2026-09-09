@@ -3,10 +3,16 @@ const adminController = require('../controllers/admin.controller');
 const authMiddleware = require('../middleware/auth');
 const requireAdmin = require('../middleware/requireAdmin');
 const { validate } = require('../middleware/validate');
-const { updateReceiptStatusSchema } = require('../validators/receiptValidator');
+const { updateReceiptStatusSchema, receiptListQuerySchema } = require('../validators/receiptValidator');
 const { idParamSchema } = require('../validators/commonValidator');
 
-router.get('/receipts', authMiddleware, requireAdmin, adminController.listReceipts);
+router.get(
+  '/receipts',
+  authMiddleware,
+  requireAdmin,
+  validate(receiptListQuerySchema, 'query'),
+  adminController.listReceipts
+);
 
 router.get(
   '/receipts/:id',

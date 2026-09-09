@@ -1,13 +1,27 @@
+const { Op } = require('sequelize');
 const { Receipt } = require('../models');
 const { toPublicReceipt } = require('../utils/serializers');
 const { NotFoundError, ConflictError, BadRequestError } = require('../utils/errors');
+const { resolvePagination, buildPaginationMeta } = require('../utils/pagination');
+const { buildDateRangeWhere } = require('../utils/dateRange');
 
-async function listForUploader(uploaderId) {
-  const receipts = await Receipt.findAll({
-    where: { uploaderId },
+async function listForUploader(uploaderId, { page, limit, status, search, dateFrom, dateTo } = {}) {
+  const pageInfo = resolvePagination({ page, limit });
+  const dateRange = buildDateRangeWhere(dateFrom, dateTo);
+  const where = {
+    uploaderId,
+    ...(status ? { status } : {}),
+    ...(search ? { orderId: { [Op.iLike]: `%${search}%` } } : {}),
+    ...(dateRange ? { purchaseDate: dateRange } : {}),
+  };
+
+  const { rows, count } = await Receipt.findAndCountAll({
+    where,
     order: [['submissionDate', 'DESC']],
+    ...(pageInfo ? { limit: pageInfo.limit, offset: (pageInfo.page - 1) * pageInfo.limit } : {}),
   });
-  return receipts.map(toPublicReceipt);
+
+  return { receipts: rows.map(toPublicReceipt), pagination: buildPaginationMeta(pageInfo, count) };
 }
 
 // Receipts belonging to another user are reported as not-found rather than

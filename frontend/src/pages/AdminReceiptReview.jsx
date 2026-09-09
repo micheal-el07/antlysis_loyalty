@@ -4,6 +4,7 @@ import Button from "../components/Button";
 import EmptyState from "../components/EmptyState";
 import LoadingState from "../components/LoadingState";
 import ErrorState from "../components/ErrorState";
+import { friendlyErrorMessage } from "../utils/friendlyError";
 
 const REJECT_REASONS = [
   "Image too blurry to read",
@@ -57,7 +58,7 @@ export default function AdminReceiptReview() {
       setDecisions((d) => [{ ...selected, status: "approved" }, ...d]);
       setSelectedId(null);
     } catch (err) {
-      setError(err.message);
+      setError(friendlyErrorMessage(err, "Couldn't save that decision. Please try again."));
     } finally {
       setSubmitting(false);
     }
@@ -77,7 +78,7 @@ export default function AdminReceiptReview() {
       setReason("");
       setSelectedId(null);
     } catch (err) {
-      setError(err.message);
+      setError(friendlyErrorMessage(err, "Couldn't save that decision. Please try again."));
     } finally {
       setSubmitting(false);
     }

@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import Button from "../components/Button";
 import FormField, { inputClass } from "../components/FormField";
+import { friendlyErrorMessage } from "../utils/friendlyError";
 
 const STEPS = [
   { n: 1, label: "Add photo" },
@@ -84,7 +85,7 @@ export default function ReceiptUpload() {
 
       setStep(3);
     } catch (err) {
-      setErrors({ form: err.message });
+      setErrors({ form: friendlyErrorMessage(err, "Couldn't submit your receipt. Please try again.") });
     } finally {
       setSubmitting(false);
     }

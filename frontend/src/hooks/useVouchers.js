@@ -1,9 +1,16 @@
 import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
+import { friendlyErrorMessage } from "../utils/friendlyError";
 
-export default function useVouchers() {
+// Omitting page entirely (call with no args) fetches every voucher,
+// unpaginated — used where an accurate total matters more than a single
+// page (e.g. the admin dashboard's "Issued vouchers" count). Passing it
+// turns pagination on, for the voucher list pages.
+export default function useVouchers({ page, limit } = {}) {
   const { token, logout } = useAuth();
   const [vouchers, setVouchers] = useState([]);
+  const [pagination, setPagination] = useState(null);
+  const [availableAmount, setAvailableAmount] = useState(null);
   const [status, setStatus] = useState("loading");
   const [error, setError] = useState(null);
 
@@ -11,7 +18,12 @@ export default function useVouchers() {
     setStatus("loading");
     setError(null);
     try {
-      const res = await fetch("/api/v1/vouchers", {
+      const params = new URLSearchParams();
+      if (page !== undefined) params.set("page", String(page));
+      if (limit !== undefined) params.set("limit", String(limit));
+      const qs = params.toString();
+
+      const res = await fetch(`/api/v1/vouchers${qs ? `?${qs}` : ""}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -30,17 +42,19 @@ export default function useVouchers() {
         throw new Error(body?.error?.message || `Request failed with status ${res.status}`);
       }
 
-      setVouchers(body.data);
+      setVouchers(body.data.vouchers);
+      setPagination(body.data.pagination);
+      setAvailableAmount(body.data.availableAmount);
       setStatus("ready");
     } catch (err) {
-      setError(err.message || "Couldn't load your vouchers.");
+      setError(friendlyErrorMessage(err, "Couldn't load your vouchers."));
       setStatus("error");
     }
-  }, [token, logout]);
+  }, [token, logout, page, limit]);
 
   useEffect(() => {
     load();
   }, [load]);
 
-  return { vouchers, status, error, reload: load };
+  return { vouchers, pagination, availableAmount, status, error, reload: load };
 }

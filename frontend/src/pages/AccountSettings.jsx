@@ -3,6 +3,7 @@ import { useAuth } from "../context/AuthContext";
 import Button from "../components/Button";
 import FormField, { inputClass } from "../components/FormField";
 import LoadingState from "../components/LoadingState";
+import { friendlyErrorMessage } from "../utils/friendlyError";
 
 const NOTIFICATION_OPTIONS = [
   {
@@ -113,7 +114,7 @@ export default function AccountSettings() {
       setSaveStatus("saved");
       setTimeout(() => setSaveStatus("idle"), 2500);
     } catch (err) {
-      setErrors({ form: err.message });
+      setErrors({ form: friendlyErrorMessage(err, "Couldn't save your changes.") });
       setSaveStatus("error");
     }
   }

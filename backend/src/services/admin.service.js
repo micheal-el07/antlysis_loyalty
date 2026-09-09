@@ -1,7 +1,10 @@
+const { Op } = require('sequelize');
 const { sequelize, Receipt, Voucher, User } = require('../models');
 const { toPublicReceipt, toAdminReceipt, toPublicVoucher } = require('../utils/serializers');
 const { NotFoundError, ConflictError } = require('../utils/errors');
 const { VOUCHER_REWARD_RATE, VOUCHER_VALIDITY_DAYS } = require('../config/constants');
+const { resolvePagination, buildPaginationMeta } = require('../utils/pagination');
+const { buildDateRangeWhere } = require('../utils/dateRange');
 
 const UPLOADER_INCLUDE = { model: User, as: 'uploader', attributes: ['id', 'name'] };
 
@@ -14,12 +17,33 @@ function calculateVoucherAmount(purchaseAmount) {
   return Math.round(Number(purchaseAmount) * VOUCHER_REWARD_RATE * 100) / 100;
 }
 
-async function listAllReceipts() {
-  const receipts = await Receipt.findAll({
+async function listAllReceipts({ page, limit, status, search, dateFrom, dateTo } = {}) {
+  const pageInfo = resolvePagination({ page, limit });
+  const dateRange = buildDateRangeWhere(dateFrom, dateTo);
+  const where = {
+    ...(status ? { status } : {}),
+    ...(dateRange ? { purchaseDate: dateRange } : {}),
+    // Matches order ID or the joined uploader's name — '$uploader.name$'
+    // is Sequelize's syntax for referencing an included association's
+    // column in a where clause.
+    ...(search
+      ? {
+          [Op.or]: [
+            { orderId: { [Op.iLike]: `%${search}%` } },
+            { '$uploader.name$': { [Op.iLike]: `%${search}%` } },
+          ],
+        }
+      : {}),
+  };
+
+  const { rows, count } = await Receipt.findAndCountAll({
+    where,
     include: [UPLOADER_INCLUDE],
     order: [['submissionDate', 'DESC']],
+    ...(pageInfo ? { limit: pageInfo.limit, offset: (pageInfo.page - 1) * pageInfo.limit } : {}),
   });
-  return receipts.map(toAdminReceipt);
+
+  return { receipts: rows.map(toAdminReceipt), pagination: buildPaginationMeta(pageInfo, count) };
 }
 
 async function getReceiptById(id) {

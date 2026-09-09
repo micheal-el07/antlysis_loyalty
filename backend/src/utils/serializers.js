@@ -56,11 +56,15 @@ function toDashboardReceipt(receipt) {
 }
 
 // Snake_case on purpose — matches the voucher shape already agreed with the
-// frontend (id, receipt_id, amount, expiry_date, created_at).
+// frontend (id, receipt_id, amount, expiry_date, created_at). order_id is
+// only populated when the query eager-loaded the `receipt` association —
+// it's the human-visible identifier shown in the UI (receipt_id, the raw
+// UUID, isn't shown anywhere and isn't a useful thing to display).
 function toPublicVoucher(voucher) {
   return {
     id: voucher.id,
     receipt_id: voucher.receiptId,
+    order_id: voucher.receipt ? voucher.receipt.orderId : null,
     amount: voucher.amount,
     expiry_date: voucher.expiryDate,
     created_at: voucher.createdAt,
@@ -74,7 +78,6 @@ function toAdminVoucher(voucher) {
   return {
     ...toPublicVoucher(voucher),
     owner: voucher.owner ? { id: voucher.owner.id, name: voucher.owner.name } : null,
-    order_id: voucher.receipt ? voucher.receipt.orderId : null,
   };
 }
 

@@ -3,8 +3,8 @@ const { sendSuccess } = require('../utils/response');
 const adminService = require('../services/admin.service');
 
 exports.listReceipts = asyncHandler(async (req, res) => {
-  const receipts = await adminService.listAllReceipts();
-  sendSuccess(res, { receipts });
+  const result = await adminService.listAllReceipts(req.query);
+  sendSuccess(res, result);
 });
 
 exports.getReceiptById = asyncHandler(async (req, res) => {

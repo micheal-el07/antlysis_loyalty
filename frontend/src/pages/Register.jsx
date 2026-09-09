@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import Button from "../components/Button";
 import FormField, { inputClass } from "../components/FormField";
 import PasswordInput from "../components/PasswordInput";
+import { friendlyErrorMessage } from "../utils/friendlyError";
 
 export default function Register() {
   const { register } = useAuth();
@@ -44,7 +45,7 @@ export default function Register() {
       });
       navigate(user.role === "admin" ? "/admin" : "/", { replace: true });
     } catch (err) {
-      setErrors({ form: err.message });
+      setErrors({ form: friendlyErrorMessage(err, "Couldn't create your account. Please try again.") });
     } finally {
       setSubmitting(false);
     }
