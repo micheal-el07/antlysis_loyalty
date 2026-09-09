@@ -93,7 +93,7 @@ Documented as evidence of the verification process, not despite it.
 ## Known limitations
 
 - Pagination: implemented on the three list endpoints that needed it (`GET /receipts`, `GET /admin/receipts`, `GET /vouchers`), offset/limit-based, opt-in (omitting `page`/`limit` returns everything — used by the admin dashboard's counts, the nav badge, and the review queue, which don't want a partial view). The admin review queue itself is deliberately left unpaginated — it's a one-at-a-time action queue, not a browse list.
-- No Redis-backed JWT invalidation (stateless logout, documented tradeoff)
+- **No Redis-backed JWT invalidation.** Stateless logout is a deliberate choice; a "logged out" token remains valid until natural expiry. Planned approach if implemented: on logout, store the token's identifier in Redis with a TTL matching its remaining `exp`, checked in `authMiddleware` alongside signature verification — scoped out given the assessment timeline, not attempted due to lack of understanding.
 - Voucher rate (5%) and expiry (90 days) are assumptions, centralized as named constants
 - No rate limiting beyond auth endpoints
 - Phone normalization assumes Malaysian format for un-prefixed numbers
