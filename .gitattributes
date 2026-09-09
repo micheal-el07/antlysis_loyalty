@@ -1,0 +1,5 @@
+# Shell scripts run inside Linux containers — must stay LF regardless of
+# the checking-out machine's OS or git config, or a CRLF `\r` ends up as
+# part of the last argument on every line (e.g. `set -e\r`), which busybox
+# ash reports as "illegal option".
+*.sh text eol=lf

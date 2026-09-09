@@ -27,7 +27,10 @@ services:
       POSTGRES_USER: ${DB_USER:-postgres}
       POSTGRES_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env — see .env.example}
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      # Postgres 18+ images expect the mount at /var/lib/postgresql itself
+      # (versioned subdirectories go underneath) — not .../data like every
+      # earlier major version.
+      - pgdata:/var/lib/postgresql
     ports:
       - "5435:5432"
 
