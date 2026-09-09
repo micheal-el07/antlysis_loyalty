@@ -1,8 +1,3 @@
-# One-command backend + Postgres setup — pins exact versions so "what
-# Postgres/Node does the reviewer have installed" stops being a variable.
-# The frontend is intentionally NOT containerized here: it's still meant to
-# be run with `npm run dev` so you get a live dev server, not a static build.
-#
 # Usage:
 #   cp .env.example .env   # fill in JWT_SECRET, ADMIN_EMAIL, ADMIN_PASSWORD
 #   docker compose up --build
@@ -12,12 +7,6 @@
 # connections (container start != DB ready) before running the idempotent
 # admin seeder and starting the API. Both migrate and seed are safe to
 # re-run, so re-running `up` on an existing database is fine.
-#
-# Deliberately using a plain retry loop instead of depends_on/healthcheck
-# conditions — those need a newer Compose file version than every
-# reviewer's Docker install can be assumed to have.
-
-version: "3.3"
 
 services:
   postgres:
@@ -27,9 +16,6 @@ services:
       POSTGRES_USER: ${DB_USER:-postgres}
       POSTGRES_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env — see .env.example}
     volumes:
-      # Postgres 18+ images expect the mount at /var/lib/postgresql itself
-      # (versioned subdirectories go underneath) — not .../data like every
-      # earlier major version.
       - pgdata:/var/lib/postgresql
     ports:
       - "5435:5432"
@@ -41,9 +27,6 @@ services:
     environment:
       NODE_ENV: development
       PORT: 4000
-      # service name, not 127.0.0.1 — this is the one real gotcha with
-      # compose networking, and the internal port (5432), not the
-      # host-mapped one (5435) above.
       DB_HOST: postgres
       DB_PORT: 5432
       DB_NAME: ${DB_NAME:-loyalty_program_dev}
