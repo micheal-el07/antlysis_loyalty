@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import Button from "../components/Button";
 import FormField, { inputClass } from "../components/FormField";
 
@@ -10,11 +11,13 @@ const STEPS = [
 ];
 
 export default function ReceiptUpload() {
+  const { token, logout } = useAuth();
   const [step, setStep] = useState(1);
   const [file, setFile] = useState(null);
   const [dragActive, setDragActive] = useState(false);
-  const [form, setForm] = useState({ merchant: "", date: "", amount: "" });
+  const [form, setForm] = useState({ orderId: "", date: "", amount: "" });
   const [errors, setErrors] = useState({});
+  const [submitting, setSubmitting] = useState(false);
 
   function handleFile(f) {
     if (!f) return;
@@ -34,10 +37,10 @@ export default function ReceiptUpload() {
     setStep(2);
   }
 
-  function submitDetails(e) {
+  async function submitDetails(e) {
     e.preventDefault();
     const nextErrors = {};
-    if (!form.merchant.trim()) nextErrors.merchant = "Enter the store or business name.";
+    if (!form.orderId.trim()) nextErrors.orderId = "Enter the order ID printed on the receipt.";
     if (!form.date) nextErrors.date = "Enter the date printed on the receipt.";
     const amountNum = Number(form.amount);
     if (!form.amount) {
@@ -49,9 +52,42 @@ export default function ReceiptUpload() {
       setErrors(nextErrors);
       return;
     }
+
     setErrors({});
-    // Submission to the backend would happen here.
-    setStep(3);
+    setSubmitting(true);
+    try {
+      const body = new FormData();
+      body.append("image", file);
+      body.append("orderId", form.orderId.trim());
+      body.append("purchaseDate", new Date(form.date).toISOString());
+      body.append("purchaseAmount", form.amount);
+
+      const res = await fetch("/api/v1/receipts", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body,
+      });
+
+      // A dead/expired token is an auth problem, not a submission problem —
+      // sign the user out so ProtectedRoute sends them to /login instead of
+      // leaving them stuck resubmitting against a token that'll never work.
+      if (res.status === 401) {
+        logout();
+        return;
+      }
+
+      const responseBody = await res.json();
+
+      if (!res.ok || !responseBody.success) {
+        throw new Error(responseBody?.error?.message || "Couldn't submit your receipt.");
+      }
+
+      setStep(3);
+    } catch (err) {
+      setErrors({ form: err.message });
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -144,13 +180,13 @@ export default function ReceiptUpload() {
 
       {step === 2 && (
         <form onSubmit={submitDetails} className="flex flex-col gap-5">
-          <FormField label="Merchant" htmlFor="merchant" error={errors.merchant}>
+          <FormField label="Order ID" htmlFor="orderId" error={errors.orderId}>
             <input
-              id="merchant"
-              className={inputClass(!!errors.merchant)}
-              placeholder="e.g. Green Leaf Market"
-              value={form.merchant}
-              onChange={(e) => setForm({ ...form, merchant: e.target.value })}
+              id="orderId"
+              className={inputClass(!!errors.orderId)}
+              placeholder="e.g. RC-1042"
+              value={form.orderId}
+              onChange={(e) => setForm({ ...form, orderId: e.target.value })}
             />
           </FormField>
           <div className="grid grid-cols-2 gap-4">
@@ -175,11 +211,12 @@ export default function ReceiptUpload() {
               />
             </FormField>
           </div>
+          {errors.form && <p className="text-sm text-rejected">{errors.form}</p>}
           <div className="flex items-center gap-3">
-            <Button type="submit" variant="primary">
-              Submit receipt
+            <Button type="submit" variant="primary" disabled={submitting}>
+              {submitting ? "Submitting…" : "Submit receipt"}
             </Button>
-            <Button type="button" variant="ghost" onClick={() => setStep(1)}>
+            <Button type="button" variant="ghost" onClick={() => setStep(1)} disabled={submitting}>
               Back
             </Button>
           </div>
@@ -202,7 +239,7 @@ export default function ReceiptUpload() {
           <div>
             <p className="font-display text-xl text-ink">Receipt submitted</p>
             <p className="mt-1 text-sm text-ink/60">
-              We'll review {form.merchant || "your receipt"} within 24 hours and add points to your
+              We'll review {form.orderId || "your receipt"} within 24 hours and add points to your
               balance once it's approved.
             </p>
           </div>
@@ -215,7 +252,7 @@ export default function ReceiptUpload() {
               onClick={() => {
                 setStep(1);
                 setFile(null);
-                setForm({ merchant: "", date: "", amount: "" });
+                setForm({ orderId: "", date: "", amount: "" });
               }}
             >
               Upload another

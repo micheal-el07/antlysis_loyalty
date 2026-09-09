@@ -78,7 +78,8 @@ module.exports = (sequelize, DataTypes) => {
       underscored: true,
       // No created_at/updated_at columns — submissionDate serves that role
       // per the schema as specified.
-      timestamps: false,
+      timestamps: true,
+      createdAt: false,
       updatedAt: 'updatedAt',
       indexes: [
         { fields: ['uploader_id'] },

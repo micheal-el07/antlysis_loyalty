@@ -24,7 +24,7 @@ export function AuthProvider({ children }) {
   }, [auth]);
 
   async function login(identifier, password) {
-    const res = await fetch("/api/v1/login", {
+    const res = await fetch("/api/v1/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ identifier, password }),
@@ -39,15 +39,24 @@ export function AuthProvider({ children }) {
     return body.data.user;
   }
 
-  function logout() {
-    setAuth(null);
+  async function register({ name, email, phoneNumber, password }) {
+    const res = await fetch("/api/v1/auth/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, email, phoneNumber, password }),
+    });
+    const body = await res.json();
+
+    if (!res.ok || !body.success) {
+      throw new Error(body?.error?.message || "Couldn't create your account.");
+    }
+
+    setAuth({ token: body.data.token, user: body.data.user });
+    return body.data.user;
   }
 
-  function devLogin(role) {
-    setAuth({
-      token: `dev.${role}.token`,
-      user: { id: `dev-${role}`, name: role === "admin" ? "Dev Admin" : "Dev User", role },
-    });
+  function logout() {
+    setAuth(null);
   }
 
   return (
@@ -57,8 +66,8 @@ export function AuthProvider({ children }) {
         user: auth?.user ?? null,
         isAuthenticated: Boolean(auth?.token),
         login,
+        register,
         logout,
-        devLogin,
       }}
     >
       {children}

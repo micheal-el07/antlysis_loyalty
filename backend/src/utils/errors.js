@@ -16,7 +16,7 @@ class BadRequestError extends AppError {
 }
 
 class UnauthenticatedError extends AppError {
-  constructor(message = 'Not authenticated.', code = 'UNAUTHENTICATED') {
+  constructor(message = 'Not authenticated', code = 'UNAUTHENTICATED') {
     super(message, 401, code);
   }
 }

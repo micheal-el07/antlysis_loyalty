@@ -1,13 +1,25 @@
 import { useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import Button from "../components/Button";
 import FormField, { inputClass } from "../components/FormField";
+import PasswordInput from "../components/PasswordInput";
 
 export default function Login() {
-  const { login, devLogin } = useAuth();
+  const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Only honor the page the user was bounced from if it actually belongs to
+  // the role that just logged in — otherwise an admin who first hit "/"
+  // while logged out (a non-admin route) would get sent back to the user
+  // dashboard instead of /admin.
+  function resolveDestination(role) {
+    const from = location.state?.from?.pathname;
+    const fallback = role === "admin" ? "/admin" : "/";
+    const fromMatchesRole = from && (role === "admin") === from.startsWith("/admin");
+    return fromMatchesRole ? from : fallback;
+  }
 
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
@@ -29,20 +41,12 @@ export default function Login() {
     setSubmitting(true);
     try {
       const user = await login(identifier.trim(), password);
-      const fallback = user.role === "admin" ? "/admin" : "/";
-      navigate(location.state?.from?.pathname ?? fallback, { replace: true });
+      navigate(resolveDestination(user.role), { replace: true });
     } catch (err) {
       setErrors({ form: err.message });
     } finally {
       setSubmitting(false);
     }
-  }
-
-  function handleDevLogin(role) {
-    devLogin(role);
-    navigate(location.state?.from?.pathname ?? (role === "admin" ? "/admin" : "/"), {
-      replace: true,
-    });
   }
 
   return (
@@ -65,9 +69,8 @@ export default function Login() {
           </FormField>
 
           <FormField label="Password" htmlFor="password" error={errors.password}>
-            <input
+            <PasswordInput
               id="password"
-              type="password"
               autoComplete="current-password"
               className={inputClass(!!errors.password)}
               placeholder="••••••••"
@@ -83,31 +86,12 @@ export default function Login() {
           </Button>
         </form>
 
-        {import.meta.env.DEV && (
-          <div className="mt-8 border-t border-line pt-6">
-            <p className="text-xs font-medium uppercase tracking-wide text-ink/40">
-              Dev shortcuts — no backend needed
-            </p>
-            <div className="mt-3 flex gap-3">
-              <Button
-                type="button"
-                variant="outline"
-                className="flex-1"
-                onClick={() => handleDevLogin("user")}
-              >
-                Continue as user
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                className="flex-1"
-                onClick={() => handleDevLogin("admin")}
-              >
-                Continue as admin
-              </Button>
-            </div>
-          </div>
-        )}
+        <p className="mt-6 text-sm text-ink/60">
+          Don't have an account?{" "}
+          <Link to="/register" className="font-medium text-petrol hover:text-petrol-dark">
+            Sign up
+          </Link>
+        </p>
       </div>
     </div>
   );

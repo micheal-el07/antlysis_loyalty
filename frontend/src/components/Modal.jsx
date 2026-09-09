@@ -12,7 +12,7 @@ export default function Modal({ onClose, children, className = "max-w-md" }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-4" onClick={onClose}>
       <div
-        className={`w-full border border-line bg-white p-6 shadow-lg ${className}`}
+        className={`w-full max-h-[85vh] overflow-y-auto border border-line bg-white p-6 shadow-lg ${className}`}
         onClick={(e) => e.stopPropagation()}
       >
         {children}

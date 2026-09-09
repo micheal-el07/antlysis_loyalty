@@ -1,21 +1,125 @@
-import { useState } from "react";
-import { currentUser } from "../data/mock";
+import { useEffect, useState } from "react";
+import { useAuth } from "../context/AuthContext";
 import Button from "../components/Button";
 import FormField, { inputClass } from "../components/FormField";
+import LoadingState from "../components/LoadingState";
+
+const NOTIFICATION_OPTIONS = [
+  {
+    key: "receiptDecisions",
+    label: "Receipt decisions",
+    hint: "Get notified when a receipt is approved or rejected.",
+  },
+  {
+    key: "voucherExpiry",
+    label: "Voucher expiry reminders",
+    hint: "A heads-up a few days before an unused voucher expires.",
+  },
+  {
+    key: "promotions",
+    label: "Promotions and bonus point events",
+    hint: "Occasional emails about ways to earn extra points.",
+  },
+];
 
 export default function AccountSettings() {
-  const [form, setForm] = useState({ name: currentUser.name, email: currentUser.email });
+  const { token, user, logout } = useAuth();
+  const [form, setForm] = useState({ name: user?.name || "", email: "", phoneNumber: "" });
+  const [loadStatus, setLoadStatus] = useState("loading");
   const [notifications, setNotifications] = useState({
     receiptDecisions: true,
     voucherExpiry: true,
     promotions: false,
   });
-  const [saved, setSaved] = useState(false);
+  const [saveStatus, setSaveStatus] = useState("idle");
+  const [errors, setErrors] = useState({});
 
-  function handleSave(e) {
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadProfile() {
+      try {
+        const res = await fetch("/api/v1/users/me", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        // A dead/expired token is an auth problem, not a "couldn't load
+        // profile" problem — sign the user out so ProtectedRoute sends them
+        // to /login instead of showing a form that can never load or save.
+        if (res.status === 401) {
+          if (!cancelled) logout();
+          return;
+        }
+
+        const body = await res.json();
+
+        if (!res.ok || !body.success) {
+          throw new Error(body?.error?.message || `Request failed with status ${res.status}`);
+        }
+
+        if (!cancelled) {
+          setForm({
+            name: body.data.name || "",
+            email: body.data.email || "",
+            phoneNumber: body.data.phoneNumber || "",
+          });
+        }
+      } catch (err) {
+        console.error("Failed to load profile:", err);
+      } finally {
+        if (!cancelled) setLoadStatus("ready");
+      }
+    }
+
+    loadProfile();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [token]);
+
+  async function handleSave(e) {
     e.preventDefault();
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2500);
+    setErrors({});
+    setSaveStatus("saving");
+    try {
+      const res = await fetch("/api/v1/users/me", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          name: form.name,
+          email: form.email || null,
+          phoneNumber: form.phoneNumber || null,
+        }),
+      });
+
+      // A dead/expired token is an auth problem, not a "couldn't save"
+      // problem — sign the user out so ProtectedRoute sends them to /login
+      // instead of leaving them stuck resaving against a dead token.
+      if (res.status === 401) {
+        logout();
+        return;
+      }
+
+      const body = await res.json();
+
+      if (!res.ok || !body.success) {
+        throw new Error(body?.error?.message || "Couldn't save your changes.");
+      }
+
+      setSaveStatus("saved");
+      setTimeout(() => setSaveStatus("idle"), 2500);
+    } catch (err) {
+      setErrors({ form: err.message });
+      setSaveStatus("error");
+    }
+  }
+
+  if (loadStatus === "loading") {
+    return <LoadingState label="Loading your account…" />;
   }
 
   return (
@@ -36,7 +140,11 @@ export default function AccountSettings() {
               onChange={(e) => setForm({ ...form, name: e.target.value })}
             />
           </FormField>
-          <FormField label="Email address" htmlFor="email" hint="Used for receipt decisions and voucher alerts.">
+          <FormField
+            label="Email address"
+            htmlFor="email"
+            hint="Used for receipt decisions and voucher alerts."
+          >
             <input
               id="email"
               type="email"
@@ -45,27 +153,19 @@ export default function AccountSettings() {
               onChange={(e) => setForm({ ...form, email: e.target.value })}
             />
           </FormField>
+          <FormField label="Phone number" htmlFor="phoneNumber">
+            <input
+              id="phoneNumber"
+              className={inputClass(false)}
+              value={form.phoneNumber}
+              onChange={(e) => setForm({ ...form, phoneNumber: e.target.value })}
+            />
+          </FormField>
         </section>
 
         <section className="flex flex-col gap-4 border-t border-line pt-8">
           <h2 className="font-display text-lg text-ink">Notifications</h2>
-          {[
-            {
-              key: "receiptDecisions",
-              label: "Receipt decisions",
-              hint: "Get notified when a receipt is approved or rejected.",
-            },
-            {
-              key: "voucherExpiry",
-              label: "Voucher expiry reminders",
-              hint: "A heads-up a few days before an unused voucher expires.",
-            },
-            {
-              key: "promotions",
-              label: "Promotions and bonus point events",
-              hint: "Occasional emails about ways to earn extra points.",
-            },
-          ].map((item) => (
+          {NOTIFICATION_OPTIONS.map((item) => (
             <label key={item.key} className="flex items-start gap-3 py-1">
               <input
                 type="checkbox"
@@ -83,11 +183,13 @@ export default function AccountSettings() {
           ))}
         </section>
 
+        {errors.form && <p className="text-sm text-rejected">{errors.form}</p>}
+
         <div className="flex items-center gap-3 border-t border-line pt-8">
-          <Button type="submit" variant="primary">
-            Save changes
+          <Button type="submit" variant="primary" disabled={saveStatus === "saving"}>
+            {saveStatus === "saving" ? "Saving…" : "Save changes"}
           </Button>
-          {saved && <span className="text-sm text-approved">Changes saved.</span>}
+          {saveStatus === "saved" && <span className="text-sm text-approved">Changes saved.</span>}
         </div>
       </form>
 

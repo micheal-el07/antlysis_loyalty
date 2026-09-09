@@ -1,58 +1,46 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 
-const DUMMY_VOUCHERS = [
-  {
-    id: "e1a2b3c4-5b6a-4a2b-8c3d-1e2f3a4b5c6d",
-    receipt_id: "8f14e45f-ceea-467e-bd3f-0b47d3a5f1f2",
-    amount: 10,
-    expiry_date: "2026-11-01T00:00:00Z",
-    created_at: "2026-09-03T15:33:00Z",
-  },
-  {
-    id: "f2b3c4d5-6c7b-4b3c-9d4e-2f3a4b5c6d7e",
-    receipt_id: "c5e3d4b2-9f5a-4d3c-be4f-3a7b8c9d0e1f",
-    amount: 5,
-    expiry_date: "2026-09-20T00:00:00Z",
-    created_at: "2026-08-16T10:05:00Z",
-  },
-];
-
 export default function useVouchers() {
-  const { token } = useAuth();
-  const [vouchers, setVouchers] = useState(DUMMY_VOUCHERS);
+  const { token, logout } = useAuth();
+  const [vouchers, setVouchers] = useState([]);
   const [status, setStatus] = useState("loading");
+  const [error, setError] = useState(null);
+
+  const load = useCallback(async () => {
+    setStatus("loading");
+    setError(null);
+    try {
+      const res = await fetch("/api/v1/vouchers", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      // A dead/expired token is an auth problem, not a "backend is down"
+      // problem — sign the user out so ProtectedRoute bounces them to
+      // /login instead of showing an error banner for something that isn't
+      // one.
+      if (res.status === 401) {
+        logout();
+        return;
+      }
+
+      const body = await res.json();
+
+      if (!res.ok || !body.success) {
+        throw new Error(body?.error?.message || `Request failed with status ${res.status}`);
+      }
+
+      setVouchers(body.data);
+      setStatus("ready");
+    } catch (err) {
+      setError(err.message || "Couldn't load your vouchers.");
+      setStatus("error");
+    }
+  }, [token, logout]);
 
   useEffect(() => {
-    let cancelled = false;
+    load();
+  }, [load]);
 
-    async function loadVouchers() {
-      try {
-        const res = await fetch("/api/vouchers", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const body = await res.json();
-
-        if (!res.ok || !body.success) {
-          throw new Error(body?.error?.message || `Request failed with status ${res.status}`);
-        }
-
-        if (!cancelled) {
-          setVouchers(body.data);
-          setStatus("ready");
-        }
-      } catch (err) {
-        console.error("Failed to load vouchers, falling back to dummy data:", err);
-        if (!cancelled) setStatus("ready");
-      }
-    }
-
-    loadVouchers();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [token]);
-
-  return { vouchers, status };
+  return { vouchers, status, error, reload: load };
 }

@@ -34,6 +34,19 @@ Server starts on `PORT` from `.env` (default `4000`). Health check: `GET /health
 
 Registration (`POST /api/v1/auth/register`) always creates a `role: "user"` account — there's no self-service way to become an admin. The seeder above is the only way to get an admin login for local testing.
 
+## Docker
+
+An alternative to the manual setup above — pins the exact Postgres and Node versions so setup doesn't depend on whatever's already installed locally. Covers the backend + Postgres only; the frontend still runs with `npm run dev` (see `../frontend/README.md`).
+
+```bash
+cp ../.env.example ../.env   # repo root — fill in JWT_SECRET, ADMIN_EMAIL, ADMIN_PASSWORD
+docker compose up --build    # or `docker-compose up --build` on an older Docker install
+```
+
+This starts Postgres, then the backend's `docker-entrypoint.sh` retries migrations until Postgres actually accepts connections (container start ≠ DB ready), runs the idempotent admin seeder, and starts the API on `http://localhost:4000`. Re-running `up` against an existing database is safe — both migrate and seed are idempotent.
+
+The compose file lives at the repo root (`../docker-compose.yml`) since it orchestrates two services, not just this one; its `.env` is separate from this directory's `.env` (used for the non-Docker setup above) since `DB_HOST`/`DB_PORT` need different values in each context (`postgres`/`5432` inside the Docker network vs. `127.0.0.1`/`5435` on the host).
+
 ## Scripts
 
 | Command | Does |

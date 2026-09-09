@@ -98,7 +98,7 @@ Documented as evidence of the verification process, not despite it.
 - Receipt images served via unguessable UUID filename, no per-request auth check on the static route
 - No broad test suite — targeted unit tests + deliberate manual verification only
 - Frontend upload-limit copy and "recent receipts" count aren't sourced from backend constants
-- Docker: [state actual outcome — built, or scoped out given timeline]
+- Docker: built — `docker-compose.yml` at the repo root runs backend + Postgres with pinned versions, so setup doesn't depend on the reviewer's local Node/Postgres. Deliberately covers backend + DB only, not the frontend — see `backend/README.md#docker`. One caveat: the wait-for-Postgres logic is a plain retry loop (`backend/docker-entrypoint.sh`), not a Compose `depends_on: condition: service_healthy`, because that syntax needs a newer Compose file version than every reviewer's Docker install can be assumed to have.
 
 ## AI-assisted development
 

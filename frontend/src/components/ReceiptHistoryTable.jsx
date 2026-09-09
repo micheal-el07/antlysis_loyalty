@@ -2,6 +2,7 @@ import { useState } from "react";
 import StatusBadge from "./StatusBadge";
 import ReceiptDetailModal from "./ReceiptDetailModal";
 import LoadingState from "./LoadingState";
+import ErrorState from "./ErrorState";
 
 const ROW_GRID = "grid grid-cols-[minmax(0,1fr)_120px_120px_100px_120px_40px] items-center gap-x-6";
 
@@ -13,11 +14,15 @@ function formatDate(iso) {
   });
 }
 
-export default function ReceiptHistoryTable({ receipts, loadStatus, emptyState }) {
+export default function ReceiptHistoryTable({ receipts, loadStatus, error, onRetry, emptyState }) {
   const [selectedReceipt, setSelectedReceipt] = useState(null);
 
   if (loadStatus === "loading") {
     return <LoadingState label="Loading receipts…" />;
+  }
+
+  if (loadStatus === "error") {
+    return <ErrorState description={error} onRetry={onRetry} />;
   }
 
   if (receipts.length === 0) {
@@ -41,7 +46,7 @@ export default function ReceiptHistoryTable({ receipts, loadStatus, emptyState }
             <p className="truncate font-mono text-xs text-ink/50">{r.orderId}</p>
             <p className="font-mono text-sm text-ink/70">{formatDate(r.purchaseDate)}</p>
             <p className="font-mono text-sm text-ink/70">{formatDate(r.submissionDate)}</p>
-            <p className="text-right font-mono text-sm text-ink/70">${r.purchaseAmount.toFixed(2)}</p>
+            <p className="text-right font-mono text-sm text-ink/70">${Number(r.purchaseAmount).toFixed(2)}</p>
             <div>
               <StatusBadge status={r.status} />
             </div>

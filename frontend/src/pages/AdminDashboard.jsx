@@ -1,17 +1,39 @@
 import { Link } from "react-router-dom";
-import { adminQueue, adminStats } from "../data/mock";
+import useAdminReceipts from "../hooks/useAdminReceipts";
+import useVouchers from "../hooks/useVouchers";
 import StatusBadge from "../components/StatusBadge";
-import Button from "../components/Button";
 import EmptyState from "../components/EmptyState";
+import LoadingState from "../components/LoadingState";
+import ErrorState from "../components/ErrorState";
 
-const STATS = [
-  { label: "Pending review", value: adminStats.pendingCount },
-  { label: "Approved today", value: adminStats.approvedToday },
-  { label: "Rejected today", value: adminStats.rejectedToday },
-  { label: "Avg. review time", value: `${adminStats.avgReviewMinutes}m` },
-];
+function formatDate(iso) {
+  return new Date(iso).toLocaleDateString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+}
 
 export default function AdminDashboard() {
+  const { receipts, status: loadStatus, error: loadError, reload } = useAdminReceipts();
+  const { vouchers, status: vouchersStatus } = useVouchers();
+
+  if (loadStatus === "error") {
+    return <ErrorState description={loadError} onRetry={reload} />;
+  }
+
+  const pending = receipts.filter((r) => r.status === "pending");
+  const approved = receipts.filter((r) => r.status === "approved");
+  const rejected = receipts.filter((r) => r.status === "rejected");
+  const nextInQueue = pending.slice(0, 5);
+
+  const stats = [
+    { label: "Pending review", value: pending.length },
+    { label: "Approved", value: approved.length },
+    { label: "Rejected", value: rejected.length },
+    { label: "Issued vouchers", value: vouchersStatus === "error" ? "—" : vouchers.length },
+  ];
+
   return (
     <div className="flex flex-col gap-8">
       <div>
@@ -20,7 +42,7 @@ export default function AdminDashboard() {
       </div>
 
       <div className="grid grid-cols-4 divide-x divide-line border border-line bg-white">
-        {STATS.map((s) => (
+        {stats.map((s) => (
           <div key={s.label} className="px-5 py-4">
             <p className="text-xs font-medium text-ink/50">{s.label}</p>
             <p className="mt-1 font-mono text-2xl text-ink">{s.value}</p>
@@ -36,7 +58,9 @@ export default function AdminDashboard() {
           </Link>
         </div>
 
-        {adminQueue.length === 0 ? (
+        {loadStatus === "loading" ? (
+          <LoadingState label="Loading queue…" />
+        ) : nextInQueue.length === 0 ? (
           <EmptyState title="Queue is clear" description="No receipts are waiting on review right now." />
         ) : (
           <table className="w-full border-collapse text-left">
@@ -44,7 +68,6 @@ export default function AdminDashboard() {
               <tr className="border-b border-line text-xs font-medium text-ink/50">
                 <th className="py-2 pr-4 font-medium">Receipt</th>
                 <th className="py-2 pr-4 font-medium">Member</th>
-                <th className="py-2 pr-4 font-medium">Merchant</th>
                 <th className="py-2 pr-4 font-medium">Submitted</th>
                 <th className="py-2 pr-4 text-right font-medium">Amount</th>
                 <th className="py-2 pr-4 font-medium">Status</th>
@@ -52,14 +75,15 @@ export default function AdminDashboard() {
               </tr>
             </thead>
             <tbody>
-              {adminQueue.map((r) => (
+              {nextInQueue.map((r) => (
                 <tr key={r.id} className="border-b border-line hover:bg-white">
-                  <td className="py-2.5 pr-4 font-mono text-xs text-ink/50">{r.id}</td>
-                  <td className="py-2.5 pr-4 text-sm text-ink">{r.user}</td>
-                  <td className="py-2.5 pr-4 text-sm text-ink/80">{r.merchant}</td>
-                  <td className="py-2.5 pr-4 font-mono text-xs text-ink/50">{r.date}</td>
+                  <td className="py-2.5 pr-4 font-mono text-xs text-ink/50">{r.orderId}</td>
+                  <td className="py-2.5 pr-4 text-sm text-ink">{r.uploader?.name ?? "—"}</td>
+                  <td className="py-2.5 pr-4 font-mono text-xs text-ink/50">
+                    {formatDate(r.submissionDate)}
+                  </td>
                   <td className="py-2.5 pr-4 text-right font-mono text-sm text-ink/70">
-                    ${r.amount.toFixed(2)}
+                    ${Number(r.purchaseAmount).toFixed(2)}
                   </td>
                   <td className="py-2.5 pr-4">
                     <StatusBadge status={r.status} />

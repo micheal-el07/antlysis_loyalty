@@ -1,0 +1,62 @@
+# One-command backend + Postgres setup — pins exact versions so "what
+# Postgres/Node does the reviewer have installed" stops being a variable.
+# The frontend is intentionally NOT containerized here: it's still meant to
+# be run with `npm run dev` so you get a live dev server, not a static build.
+#
+# Usage:
+#   cp .env.example .env   # fill in JWT_SECRET, ADMIN_EMAIL, ADMIN_PASSWORD
+#   docker compose up --build
+#
+# This starts Postgres, then the backend's own entrypoint script
+# (docker-entrypoint.sh) retries migrations until Postgres actually accepts
+# connections (container start != DB ready) before running the idempotent
+# admin seeder and starting the API. Both migrate and seed are safe to
+# re-run, so re-running `up` on an existing database is fine.
+#
+# Deliberately using a plain retry loop instead of depends_on/healthcheck
+# conditions — those need a newer Compose file version than every
+# reviewer's Docker install can be assumed to have.
+
+version: "3.3"
+
+services:
+  postgres:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_DB: ${DB_NAME:-loyalty_program_dev}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env — see .env.example}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5435:5432"
+
+  backend:
+    build: ./backend
+    depends_on:
+      - postgres
+    environment:
+      NODE_ENV: development
+      PORT: 4000
+      # service name, not 127.0.0.1 — this is the one real gotcha with
+      # compose networking, and the internal port (5432), not the
+      # host-mapped one (5435) above.
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME:-loyalty_program_dev}
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env — see .env.example}
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env — see .env.example}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+      BCRYPT_SALT_ROUNDS: ${BCRYPT_SALT_ROUNDS:-10}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:5173}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:?Set ADMIN_EMAIL in .env — see .env.example}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?Set ADMIN_PASSWORD in .env — see .env.example}
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./backend/uploads:/app/uploads
+    command: sh docker-entrypoint.sh
+
+volumes:
+  pgdata:

@@ -3,7 +3,7 @@ import EmptyState from "../components/EmptyState";
 import VoucherTable from "../components/VoucherTable";
 
 export default function VoucherList() {
-  const { vouchers, status: loadStatus } = useVouchers();
+  const { vouchers, status: loadStatus, error, reload } = useVouchers();
 
   return (
     <div className="flex flex-col gap-6">
@@ -17,6 +17,8 @@ export default function VoucherList() {
       <VoucherTable
         vouchers={vouchers}
         loadStatus={loadStatus}
+        error={error}
+        onRetry={reload}
         emptyState={
           <EmptyState
             title="No vouchers yet"

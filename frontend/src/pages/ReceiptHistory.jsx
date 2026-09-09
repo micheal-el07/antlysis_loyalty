@@ -8,7 +8,7 @@ import ReceiptHistoryTable from "../components/ReceiptHistoryTable";
 const FILTERS = ["All", "Pending", "Approved", "Rejected"];
 
 export default function ReceiptHistory() {
-  const { receipts, status: loadStatus } = useReceipts();
+  const { receipts, status: loadStatus, error, reload } = useReceipts();
   const [filter, setFilter] = useState("All");
 
   const filtered =
@@ -55,7 +55,13 @@ export default function ReceiptHistory() {
         ))}
       </div>
 
-      <ReceiptHistoryTable receipts={filtered} loadStatus={loadStatus} emptyState={emptyState} />
+      <ReceiptHistoryTable
+        receipts={filtered}
+        loadStatus={loadStatus}
+        error={error}
+        onRetry={reload}
+        emptyState={emptyState}
+      />
     </div>
   );
 }

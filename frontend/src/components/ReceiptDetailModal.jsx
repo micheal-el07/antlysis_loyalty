@@ -24,23 +24,29 @@ export default function ReceiptDetailModal({ receipt, onClose }) {
 
       <div className={`mt-5 ${receipt.imageUrl ? "grid grid-cols-2 gap-6" : ""}`}>
         {receipt.imageUrl && (
-          <div className="overflow-hidden rounded-sm border border-line bg-paper-dim">
+          <div className="h-96 overflow-hidden rounded-sm border border-line bg-paper-dim">
             <img
               src={receipt.imageUrl}
               alt={`Receipt ${receipt.orderId}`}
-              className="h-full w-full object-cover"
+              className="h-full w-full object-contain"
             />
           </div>
         )}
 
         <dl className="flex flex-col gap-3 text-sm">
+          {receipt.uploader && (
+            <div className="flex items-center justify-between">
+              <dt className="text-ink/50">Member</dt>
+              <dd className="text-ink">{receipt.uploader.name}</dd>
+            </div>
+          )}
           <div className="flex items-center justify-between">
             <dt className="text-ink/50">Order id</dt>
             <dd className="font-mono text-ink">{receipt.orderId}</dd>
           </div>
           <div className="flex items-center justify-between">
             <dt className="text-ink/50">Amount</dt>
-            <dd className="font-mono text-ink">${receipt.purchaseAmount.toFixed(2)}</dd>
+            <dd className="font-mono text-ink">${Number(receipt.purchaseAmount).toFixed(2)}</dd>
           </div>
           {receipt.purchaseDate && (
             <div className="flex items-center justify-between">

@@ -1,12 +1,13 @@
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const {
+  RECEIPT_UPLOAD_ALLOWED_MIME_TYPES: ALLOWED_MIME_TYPES,
+  RECEIPT_UPLOAD_MAX_FILE_SIZE_BYTES: MAX_FILE_SIZE_BYTES,
+} = require('./constants');
 
 const UPLOAD_DIR = path.resolve(__dirname, '..', '..', 'uploads', 'receipts');
 fs.mkdirSync(UPLOAD_DIR, { recursive: true });
-
-const ALLOWED_MIME_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'application/pdf']);
-const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, UPLOAD_DIR),

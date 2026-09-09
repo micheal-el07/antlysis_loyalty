@@ -6,7 +6,9 @@ module.exports = (sequelize, DataTypes) => {
   class Voucher extends Model {
     static associate(models) {
       Voucher.belongsTo(models.Receipt, { foreignKey: 'receiptId', as: 'receipt' });
+      Voucher.belongsTo(models.User, { foreignKey: 'uploaderId', as: 'owner' });
     }
+    
   }
 
   Voucher.init(
@@ -29,6 +31,11 @@ module.exports = (sequelize, DataTypes) => {
       expiryDate: {
         type: DataTypes.DATE,
         allowNull: true,
+      },
+      uploaderId: {
+        type: DataTypes.UUID,
+        allowNull: false,
+        references: { model: 'users', key: 'id' },
       },
     },
     {

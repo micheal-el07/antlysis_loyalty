@@ -1,9 +1,11 @@
 import { NavLink, Outlet, Link, useNavigate } from "react-router-dom";
-import { adminStats } from "../data/mock";
 import { useAuth } from "../context/AuthContext";
+import useAdminReceipts from "../hooks/useAdminReceipts";
 
 const LINKS = [
   { to: "/admin", label: "Queue", end: true },
+  { to: "/admin/receipts", label: "Receipts" },
+  { to: "/admin/vouchers", label: "Vouchers" },
   { to: "/admin/review", label: "Review" },
 ];
 
@@ -16,6 +18,9 @@ function navClass({ isActive }) {
 export default function AdminLayout() {
   const { logout } = useAuth();
   const navigate = useNavigate();
+  const { receipts, status: receiptsStatus } = useAdminReceipts();
+  const pendingCount =
+    receiptsStatus === "error" ? "—" : receipts.filter((r) => r.status === "pending").length;
 
   function handleLogout() {
     logout();
@@ -39,9 +44,7 @@ export default function AdminLayout() {
             </nav>
           </div>
           <div className="flex items-center gap-4 font-mono text-xs text-paper/70">
-            <span>{adminStats.pendingCount} pending</span>
-            <span className="text-paper/30">/</span>
-            <span>{adminStats.avgReviewMinutes}m avg review</span>
+            <span>{pendingCount} pending</span>
             <span className="text-paper/30">/</span>
             <button onClick={handleLogout} className="font-sans text-paper/70 hover:text-paper">
               Log out
