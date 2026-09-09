@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 
 const AuthContext = createContext(null);
-const STORAGE_KEY = "rally_auth";
+const STORAGE_KEY = "antlity_auth";
 
 function loadStoredAuth() {
   try {

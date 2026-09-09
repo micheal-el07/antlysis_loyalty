@@ -34,7 +34,7 @@ docker compose up --build
 
 (On an older Docker install without the `docker compose` plugin, use the hyphenated `docker-compose up --build` instead — same effect.)
 
-This builds the backend image, waits for Postgres to actually accept connections, runs migrations, then seeds the database — the admin account from step 3, plus a demo user (`demo@rally.local` / `demopassword123`) with 15 sample receipts (a mix of pending/approved/rejected) and their matching vouchers, so pagination, filtering, and search are demonstrable immediately without creating data by hand. The API is now live at `http://localhost:4000`. Re-running `docker compose up --build` later is safe; migrations and seeds are idempotent.
+This builds the backend image, waits for Postgres to actually accept connections, runs migrations, then seeds the database — the admin account from step 3, plus a demo user (`demo@antlity.local` / `demopassword123`) with 15 sample receipts (a mix of pending/approved/rejected) and their matching vouchers, so pagination, filtering, and search are demonstrable immediately without creating data by hand. The API is now live at `http://localhost:4000`. Re-running `docker compose up --build` later is safe; migrations and seeds are idempotent.
 
 **5. In a new terminal, start the frontend**
 
@@ -93,4 +93,4 @@ npm run dev
 ## Verifying it worked
 
 - `curl http://localhost:4000/health` → `{"success":true,"data":{"status":"ok"}}`
-- Sign in at `http://localhost:5173/login` with the `ADMIN_EMAIL`/`ADMIN_PASSWORD` you set, or the demo user (`demo@rally.local` / `demopassword123`) to see it from a regular member's side.
+- Sign in at `http://localhost:5173/login` with the `ADMIN_EMAIL`/`ADMIN_PASSWORD` you set, or the demo user (`demo@antlity.local` / `demopassword123`) to see it from a regular member's side.

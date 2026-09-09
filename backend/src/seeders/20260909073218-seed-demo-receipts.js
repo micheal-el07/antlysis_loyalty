@@ -12,7 +12,7 @@ const { VOUCHER_REWARD_RATE, VOUCHER_VALIDITY_DAYS } = require('../config/consta
 // Not a security-sensitive account — credentials are intentionally
 // hardcoded and documented in DECISIONS.md, unlike the admin seeder's
 // env-driven credentials.
-const DEMO_EMAIL = 'demo@rally.local';
+const DEMO_EMAIL = 'demo@antlity.local';
 const DEMO_PASSWORD = 'demopassword123';
 
 // pending/approved/rejected counts — approved ones each get a matching

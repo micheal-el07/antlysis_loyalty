@@ -36,7 +36,7 @@ The backend's CORS config only allows requests from `http://localhost:5173` by d
 
 ## Auth
 
-`src/context/AuthContext.jsx` holds the JWT + user object, persisted to `localStorage` (`rally_auth`) so a refresh doesn't log you out. `src/components/ProtectedRoute.jsx` gates routes — unauthenticated users are bounced to `/login` (and returned to where they were headed afterward, if that page matches their role); an optional `role="admin"` prop additionally gates the whole `/admin/*` route tree.
+`src/context/AuthContext.jsx` holds the JWT + user object, persisted to `localStorage` (`antlity_auth`) so a refresh doesn't log you out. `src/components/ProtectedRoute.jsx` gates routes — unauthenticated users are bounced to `/login` (and returned to where they were headed afterward, if that page matches their role); an optional `role="admin"` prop additionally gates the whole `/admin/*` route tree.
 
 Every authenticated `fetch` call attaches `Authorization: Bearer <token>` manually — there's no central HTTP client wrapper, so a new hook needs to do this itself (see any file in `src/hooks/` for the pattern).
 
