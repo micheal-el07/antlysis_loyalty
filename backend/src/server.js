@@ -1,11 +1,15 @@
 const app = require('./app');
 const env = require('./config/env');
 const sequelize = require('./config/database');
+const redis = require('./config/redis');
 
 async function start() {
   try {
     await sequelize.authenticate();
     console.log('Database connection established.');
+
+    await redis.connect();
+    console.log('Redis connection established.');
 
     app.listen(env.port, () => {
       console.log(`Server listening on port ${env.port} (${env.nodeEnv})`);

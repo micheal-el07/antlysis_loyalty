@@ -18,22 +18,27 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql
     ports:
-      - "5435:5432"
+      - "5432:5432"
+
+  redis:
+    image: redis:7-alpine
 
   backend:
     build: ./backend
     depends_on:
       - postgres
+      - redis
     environment:
       NODE_ENV: development
       PORT: 4000
+      REDIS_URL: redis://redis:6379
       DB_HOST: postgres
       DB_PORT: 5432
       DB_NAME: ${DB_NAME:-loyalty_program_dev}
       DB_USER: ${DB_USER:-postgres}
       DB_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env — see .env.example}
       JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env — see .env.example}
-      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-1h}
       BCRYPT_SALT_ROUNDS: ${BCRYPT_SALT_ROUNDS:-10}
       FRONTEND_URL: ${FRONTEND_URL:-http://localhost:5173}
       ADMIN_EMAIL: ${ADMIN_EMAIL:?Set ADMIN_EMAIL in .env — see .env.example}

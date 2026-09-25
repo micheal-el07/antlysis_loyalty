@@ -110,7 +110,7 @@ Base URL: `http://localhost:4000` (or your configured `PORT`).
 | GET | `/health` | — | |
 | POST | `/api/v1/auth/register` | — | rate-limited · `{ name, email?, phoneNumber?, password }` — email or phone required; always creates `role: "user"` |
 | POST | `/api/v1/auth/login` | — | rate-limited · `{ identifier, password }` |
-| POST | `/api/v1/auth/logout` | ✓ | stateless JWT — no server-side effect, just a symmetric endpoint |
+| POST | `/api/v1/auth/logout` | ✓ | revokes the token by adding its `jti` to a Redis blocklist until it would have expired |
 | GET | `/api/v1/users/me` | ✓ | |
 | PUT | `/api/v1/users/me` | ✓ | any of `{ name, email, phoneNumber }` |
 | GET | `/api/v1/receipts` | ✓ | own receipts only · optional `?page=&limit=&status=&search=&dateFrom=&dateTo=` (see Pagination, filtering & search below) |

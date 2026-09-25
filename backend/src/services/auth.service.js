@@ -1,36 +1,61 @@
 const bcrypt = require('bcrypt');
 const { Op } = require('sequelize');
-const { User } = require('../models');
+const { sequelize, User } = require('../models');
 const env = require('../config/env');
 const { signToken } = require('../utils/jwt');
+const { blockToken } = require('./tokenBlocklist.service');
 const { toAuthUser } = require('../utils/serializers');
 const { normalizePhoneNumber } = require('../utils/phone');
 const { UnauthenticatedError, ConflictError } = require('../utils/errors');
+const { MAX_USER_ACCOUNTS } = require('../config/constants');
+
+// Arbitrary fixed key for the registration-cap advisory lock — any bigint
+// works, it just needs to be the same one on every call. Transaction-scoped
+// (`pg_advisory_xact_lock`), so it releases automatically on commit/rollback.
+const REGISTRATION_CAP_LOCK_KEY = 72700100;
 
 async function register({ name, email, phoneNumber, password }) {
-  const existing = await User.findOne({
-    where: {
-      [Op.or]: [...(email ? [{ email }] : []), ...(phoneNumber ? [{ phoneNumber }] : [])],
-    },
-  });
-
-  if (existing) {
-    throw new ConflictError('An account with this email or phone number already exists.');
-  }
-
   const hashedPassword = await bcrypt.hash(password, env.bcryptSaltRounds);
 
-  // role is never taken from the request — every self-registration is a
-  // plain user; admins are provisioned separately.
-  const user = await User.create({
-    name,
-    email: email || null,
-    phoneNumber: phoneNumber || null,
-    hashedPassword,
-    role: 'user',
-  });
+  return sequelize.transaction(async (transaction) => {
+    // Serializes concurrent registrations so two requests can't both pass
+    // the count check and both land as the (cap+1)th user.
+    await sequelize.query('SELECT pg_advisory_xact_lock(:key)', {
+      replacements: { key: REGISTRATION_CAP_LOCK_KEY },
+      transaction,
+    });
 
-  return { token: signToken(user), user: toAuthUser(user) };
+    const existing = await User.findOne({
+      where: {
+        [Op.or]: [...(email ? [{ email }] : []), ...(phoneNumber ? [{ phoneNumber }] : [])],
+      },
+      transaction,
+    });
+
+    if (existing) {
+      throw new ConflictError('An account with this email or phone number already exists.');
+    }
+
+    const userCount = await User.count({ where: { role: 'user' }, transaction });
+    if (userCount >= MAX_USER_ACCOUNTS) {
+      throw new ConflictError('This demo instance is not accepting new accounts right now.');
+    }
+
+    // role is never taken from the request — every self-registration is a
+    // plain user; admins are provisioned separately.
+    const user = await User.create(
+      {
+        name,
+        email: email || null,
+        phoneNumber: phoneNumber || null,
+        hashedPassword,
+        role: 'user',
+      },
+      { transaction }
+    );
+
+    return { token: signToken(user), user: toAuthUser(user) };
+  });
 }
 
 async function login(identifier, password) {
@@ -58,13 +83,12 @@ async function login(identifier, password) {
   return { token: signToken(user), user: toAuthUser(user) };
 }
 
-// JWTs are stateless and there's no token-blacklist table in the schema, so
-// there is nothing server-side to invalidate — the client dropping the
-// token is what actually "logs out". Kept as an explicit service function
-// (rather than a no-op in the controller) so the business decision — that
-// logout has no server-side effect today — lives here, not in the request
-// handling layer.
-async function logout() {
+// Tokens issued before jti support carry no id and can't be revoked; they
+// simply age out.
+async function logout({ jti, exp }) {
+  if (jti && exp) {
+    await blockToken(jti, exp);
+  }
   return null;
 }
 

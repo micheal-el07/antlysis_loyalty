@@ -56,6 +56,13 @@ export function AuthProvider({ children }) {
   }
 
   function logout() {
+    if (auth?.token) {
+      // Best effort: revokes the token server-side; local sign-out happens regardless.
+      fetch("/api/v1/auth/logout", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${auth.token}` },
+      }).catch(() => {});
+    }
     setAuth(null);
   }
 

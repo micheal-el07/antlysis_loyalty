@@ -1,4 +1,5 @@
 import { Routes, Route } from "react-router-dom";
+import DemoNotice from "./components/DemoNotice";
 import ProtectedRoute from "./components/ProtectedRoute";
 import UserLayout from "./components/UserLayout";
 import AdminLayout from "./components/AdminLayout";
@@ -16,28 +17,31 @@ import AdminReceiptReview from "./pages/AdminReceiptReview";
 
 export default function App() {
   return (
-    <Routes>
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
+    <>
+      <DemoNotice />
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
 
-      <Route element={<ProtectedRoute />}>
-        <Route element={<UserLayout />}>
-          <Route path="/" element={<UserDashboard />} />
-          <Route path="/upload" element={<ReceiptUpload />} />
-          <Route path="/history" element={<ReceiptHistory />} />
-          <Route path="/vouchers" element={<VoucherList />} />
-          <Route path="/settings" element={<AccountSettings />} />
+        <Route element={<ProtectedRoute />}>
+          <Route element={<UserLayout />}>
+            <Route path="/" element={<UserDashboard />} />
+            <Route path="/upload" element={<ReceiptUpload />} />
+            <Route path="/history" element={<ReceiptHistory />} />
+            <Route path="/vouchers" element={<VoucherList />} />
+            <Route path="/settings" element={<AccountSettings />} />
+          </Route>
         </Route>
-      </Route>
 
-      <Route element={<ProtectedRoute role="admin" />}>
-        <Route element={<AdminLayout />}>
-          <Route path="/admin" element={<AdminDashboard />} />
-          <Route path="/admin/receipts" element={<AdminReceipts />} />
-          <Route path="/admin/vouchers" element={<AdminVouchers />} />
-          <Route path="/admin/review" element={<AdminReceiptReview />} />
+        <Route element={<ProtectedRoute role="admin" />}>
+          <Route element={<AdminLayout />}>
+            <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/admin/receipts" element={<AdminReceipts />} />
+            <Route path="/admin/vouchers" element={<AdminVouchers />} />
+            <Route path="/admin/review" element={<AdminReceiptReview />} />
+          </Route>
         </Route>
-      </Route>
-    </Routes>
+      </Routes>
+    </>
   );
 }

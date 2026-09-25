@@ -16,7 +16,8 @@ module.exports = {
   nodeEnv: process.env.NODE_ENV || 'development',
   port: Number(process.env.PORT) || 4000,
   jwtSecret: requireEnv('JWT_SECRET'),
-  jwtExpiresIn: process.env.JWT_EXPIRES_IN || '7d',
+  jwtExpiresIn: process.env.JWT_EXPIRES_IN || '1h',
+  redisUrl: process.env.REDIS_URL || 'redis://127.0.0.1:6379',
   bcryptSaltRounds: Number(process.env.BCRYPT_SALT_ROUNDS) || 10,
   frontendUrl: process.env.FRONTEND_URL || 'http://localhost:5173',
 };

@@ -15,7 +15,8 @@ Companion to [README.md](README.md). Dense by design — full reasoning behind a
 | `uploaderId` denormalized onto `vouchers` | Avoids a join on the most common query ("my vouchers"); safe since it's set once and never mutates |
 | Rejected receipts are terminal | No resubmission flow — user just uploads a new receipt. Kept, not deleted (audit trail) |
 | `rejectedReason` freeform text, not enum | Avoids committing to a reason taxonomy with implied follow-up behavior |
-| Stateless JWT logout, no Redis blacklist | Deliberate tradeoff — token valid until natural expiry after logout |
+| Redis JWT blocklist on logout | Each token carries a `jti`; logout stores it in Redis with a TTL equal to the token's remaining `exp`, checked in `authMiddleware`. Fails closed if Redis is down |
+| Deploy-time account/upload caps (`MAX_USER_ACCOUNTS`, `MAX_RECEIPTS_PER_USER`) | Keeps the hosted demo small. Admin has no registration route (seeded only), so only user registration needs a runtime check; the count check runs inside a transaction guarded by a Postgres advisory lock so two concurrent registrations can't both slip in as the last allowed account. The per-user receipt cap is a plain count — a race there only affects the uploader's own quota, not a shared resource |
 | `/api/dashboard` as one BFF-style aggregate endpoint | Avoids a 4-call waterfall; counts computed server-side |
 | Zod validation via shared `validate(schema)` middleware | Centralizes error formatting; schema-stripping doubles as mass-assignment protection |
 | Admin seeded at deploy, no self-service admin creation | Seed script hashes password via bcrypt from `.env` |
@@ -93,7 +94,7 @@ Documented as evidence of the verification process, not despite it.
 ## Known limitations
 
 - Pagination: implemented on the three list endpoints that needed it (`GET /receipts`, `GET /admin/receipts`, `GET /vouchers`), offset/limit-based, opt-in (omitting `page`/`limit` returns everything — used by the admin dashboard's counts, the nav badge, and the review queue, which don't want a partial view). The admin review queue itself is deliberately left unpaginated — it's a one-at-a-time action queue, not a browse list.
-- **No Redis-backed JWT invalidation.** Stateless logout is a deliberate choice; a "logged out" token remains valid until natural expiry. Planned approach if implemented: on logout, store the token's identifier in Redis with a TTL matching its remaining `exp`, checked in `authMiddleware` alongside signature verification — scoped out given the assessment timeline, not attempted due to lack of understanding.
+- JWT invalidation is per-token (logout only). There is no "log out everywhere" or revoke-on-password-change, and tokens issued before `jti` support cannot be revoked.
 - Voucher rate (5%) and expiry (90 days) are assumptions, centralized as named constants
 - No rate limiting beyond auth endpoints
 - Phone normalization assumes Malaysian format for un-prefixed numbers

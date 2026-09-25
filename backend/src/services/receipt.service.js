@@ -4,6 +4,7 @@ const { toPublicReceipt } = require('../utils/serializers');
 const { NotFoundError, ConflictError, BadRequestError } = require('../utils/errors');
 const { resolvePagination, buildPaginationMeta } = require('../utils/pagination');
 const { buildDateRangeWhere } = require('../utils/dateRange');
+const { MAX_RECEIPTS_PER_USER } = require('../config/constants');
 
 async function listForUploader(uploaderId, { page, limit, status, search, dateFrom, dateTo } = {}) {
   const pageInfo = resolvePagination({ page, limit });
@@ -43,6 +44,13 @@ async function create(uploaderId, { orderId, purchaseDate, purchaseAmount }, fil
   const existing = await Receipt.findOne({ where: { uploaderId, orderId } });
   if (existing) {
     throw new ConflictError("You've already submitted a receipt with this order ID.");
+  }
+
+  // Demo cap, not a scarce shared resource — a plain count is fine, no lock
+  // needed (worst case under a race is one user momentarily at cap+1).
+  const receiptCount = await Receipt.count({ where: { uploaderId } });
+  if (receiptCount >= MAX_RECEIPTS_PER_USER) {
+    throw new ConflictError(`You've reached the limit of ${MAX_RECEIPTS_PER_USER} receipts for this demo.`);
   }
 
   const receipt = await Receipt.create({

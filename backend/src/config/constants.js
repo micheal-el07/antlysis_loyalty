@@ -28,6 +28,12 @@ const LOGIN_RATE_LIMIT_MAX_ATTEMPTS = 10;
 const REGISTER_RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000;
 const REGISTER_RATE_LIMIT_MAX_ATTEMPTS = 20;
 
+// Deploy-time demo caps: keep the hosted instance small. Admin has no
+// self-registration route at all (seeded once at deploy), so only the
+// 'user' role needs a runtime check.
+const MAX_USER_ACCOUNTS = 3;
+const MAX_RECEIPTS_PER_USER = 20;
+
 // Phone numbers are collected without a country selector, so this is the
 // country assumed when a number isn't already in international form
 // (leading +).
@@ -49,6 +55,8 @@ module.exports = {
   LOGIN_RATE_LIMIT_MAX_ATTEMPTS,
   REGISTER_RATE_LIMIT_WINDOW_MS,
   REGISTER_RATE_LIMIT_MAX_ATTEMPTS,
+  MAX_USER_ACCOUNTS,
+  MAX_RECEIPTS_PER_USER,
   DEFAULT_PHONE_COUNTRY,
   DEFAULT_PAGE_SIZE,
   MAX_PAGE_SIZE,
