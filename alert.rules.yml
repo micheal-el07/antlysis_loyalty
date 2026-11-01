@@ -1,0 +1,36 @@
+groups:
+  - name: antlity-basic
+    rules:
+      - alert: BackendDown
+        expr: up{job="antlity-backend"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Backend target is down"
+          description: "Prometheus hasn't been able to scrape antlity-backend for 1 minute."
+
+      - alert: HighEventLoopLag
+        expr: nodejs_eventloop_lag_mean_seconds > 0.1
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Event loop lag is high"
+          description: "Mean event loop lag has been above 100ms for 2 minutes."
+
+      - alert: PostgresDown
+        expr: pg_up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Postgres is unreachable"
+
+      - alert: RedisDown
+        expr: redis_up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Redis is unreachable"

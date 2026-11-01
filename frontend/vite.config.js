@@ -17,6 +17,7 @@ import { defineConfig } from 'vite'
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
+    allowedHosts: ["parlor-width-washed.ngrok-free.dev"],
     host: true,
     proxy: {
       '/api': {

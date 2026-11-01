@@ -1,0 +1,53 @@
+{
+    "title": "Antlity Overview",
+    "uid": "antlity-overview",
+    "schemaVersion": 39,
+    "version": 1,
+    "refresh": "10s",
+    "time": { "from": "now-15m", "to": "now" },
+    "panels": [
+        {
+            "id": 1,
+            "type": "timeseries",
+            "title": "Request rate",
+            "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+            "datasource": { "type": "prometheus", "uid": "prometheus" },
+            "targets": [
+                { "expr": "rate(http_request_duration_seconds_count[5m])", "legendFormat": "{{route}} {{status_code}}", "refId": "A"}
+            ]
+        },
+        {
+        "id": 2,
+        "type": "timeseries",
+        "title": "p95 latency",
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+        "datasource": { "type": "prometheus", "uid": "prometheus" },
+        "fieldConfig": { "defaults": { "unit": "s" }, "overrides": [] },
+        "targets": [
+            { "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))", "legendFormat": "p95", "refId": "A" }
+        ]
+        },
+        {
+        "id": 3,
+        "type": "timeseries",
+        "title": "Memory (RSS)",
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+        "datasource": { "type": "prometheus", "uid": "prometheus" },
+        "fieldConfig": { "defaults": { "unit": "bytes" }, "overrides": [] },
+        "targets": [
+            { "expr": "process_resident_memory_bytes", "legendFormat": "RSS", "refId": "A" }
+        ]
+        },
+        {
+        "id": 4,
+        "type": "timeseries",
+        "title": "Event loop lag (mean)",
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+        "datasource": { "type": "prometheus", "uid": "prometheus" },
+        "fieldConfig": { "defaults": { "unit": "s" }, "overrides": [] },
+        "targets": [
+            { "expr": "nodejs_eventloop_lag_mean_seconds", "legendFormat": "lag", "refId": "A" }
+        ]
+        }
+    ]
+}
