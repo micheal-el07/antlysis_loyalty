@@ -56,6 +56,10 @@ export default function Login() {
         <p className="font-display text-2xl font-semibold tracking-tight text-ink">Antlity</p>
         <h1 className="mt-6 font-display text-3xl text-ink">Sign in</h1>
         <p className="mt-1 text-sm text-ink/60">Enter your details to access your account.</p>
+        <p className="mt-1 text-sm text-ink/60">
+          Demo account: <span className="font-mono">demo@user.com</span> /{" "}
+          <span className="font-mono">demopassword123</span>
+        </p>
 
         <form onSubmit={handleSubmit} className="mt-8 flex flex-col gap-5">
           <FormField label="Email or phone" htmlFor="identifier" error={errors.identifier}>
@@ -63,7 +67,7 @@ export default function Login() {
               id="identifier"
               autoComplete="username"
               className={inputClass(!!errors.identifier)}
-              placeholder="you@example.com"
+              placeholder="demo@user.com"
               value={identifier}
               onChange={(e) => setIdentifier(e.target.value)}
             />
@@ -74,7 +78,7 @@ export default function Login() {
               id="password"
               autoComplete="current-password"
               className={inputClass(!!errors.password)}
-              placeholder="••••••••"
+              placeholder="demopassword123"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />

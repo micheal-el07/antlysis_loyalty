@@ -6,9 +6,11 @@ const env = require('./config/env');
 const { sendSuccess } = require('./utils/response');
 const { NotFoundError } = require('./utils/errors');
 const errorHandler = require('./middleware/errorHandler');
+const { metricsMiddleware, register } = require('./middleware/metrics')
 
 const app = express();
 
+app.use(metricsMiddleware);
 app.use(morgan(':remote-addr :method :url :status :response-time ms - :res[content-length]'));
 app.use(cors({
   origin: [env.frontendUrl],
@@ -25,6 +27,11 @@ app.get('/health', (req, res) => {
 
 app.use('/api/dashboard', require('./routes/dashboard.routes'));
 app.use('/api/v1', require('./routes'));
+
+app.get('/metrics', async(req, res) => {
+  res.set('Content-Type', register.contentType);
+  res.end(await register.metrics());
+});
 
 app.use((req, res, next) => {
   next(new NotFoundError(`No route for ${req.method} ${req.originalUrl}`));

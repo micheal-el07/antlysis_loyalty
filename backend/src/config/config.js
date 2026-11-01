@@ -19,6 +19,9 @@ const sqlLogging = nodeEnv === 'development' ? console.log : false;
 // every environment, but that value is never used to connect to anything.
 function dbPassword(envName, unusedFallback) {
   if (nodeEnv !== envName) return process.env.DB_PASSWORD || unusedFallback;
+  // In production a DATABASE_URL carries its own credentials, so a separate
+  // DB_PASSWORD isn't required in that case.
+  if (envName === 'production' && process.env.DATABASE_URL) return unusedFallback;
   const value = process.env.DB_PASSWORD;
   if (!value) {
     throw new Error(`Missing required environment variable: DB_PASSWORD (needed for NODE_ENV=${envName}).`);
@@ -54,5 +57,11 @@ module.exports = {
     dialect: 'postgres',
     use_env_variable: process.env.DATABASE_URL ? 'DATABASE_URL' : undefined,
     logging: sqlLogging,
+    // Render's managed Postgres (and most hosted providers) require SSL;
+    // rejectUnauthorized: false because these providers use certs not
+    // signed by a CA in Node's default trust store.
+    dialectOptions: {
+      ssl: { require: true, rejectUnauthorized: false },
+    },
   },
 };
